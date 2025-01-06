@@ -1,0 +1,90 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+.container--0- {
+    position: absolute;
+    left: 29px;
+    top: 20px;
+    width: 780px;
+    height: 455px;
+    background-color: #ffffff;
+    justify-content: start;
+    align-items: start;
+    border-radius: 20px;
+    border-top-left-radius: 20px;
+    border-top-right-radius: 20px;
+    border-bottom-left-radius: 20px;
+    border-bottom-right-radius: 20px;
+  }
+  .text-2-3-1 {
+    position: absolute;
+    left: 25.98974609375px;
+    top: 130.64596557617188px;
+    width: 49.98012924194336px;
+    height: 18.08944320678711px;
+    color: #000000;
+    font-size: 16px;
+    font-family: Arial, "Regular";
+    font-weight: 400;
+    text-align: left;
+    vertical-align: top;
+  }
+  .text-1-2-4 {
+    position: absolute;
+    left: 454px;
+    top: 40.17668914794922px;
+    width: 152px;
+    height: 42.18543243408203px;
+    color: #000000;
+    font-size: 55px;
+    font-family: Jim Nightshade, "Regular";
+    font-weight: 400;
+    text-align: center;
+    vertical-align: center;
+  }
+  .text-1-2-5 {
+    position: absolute;
+    left: 454px;
+    top: 96.4238510131836px;
+    width: 289px;
+    height: 19.083885192871094px;
+    color: #000000;
+    font-size: 16px;
+    font-family: Karla, "Bold";
+    font-weight: 700;
+    text-align: left;
+    vertical-align: top;
+  }
+  .container-2-3-1 {
+    position: absolute;
+    left: 36px;
+    top: 314.55525970458984px;
+    width: 29px;
+    height: 29.144102096557617px;
+    justify-content: start;
+    align-items: start;
+  }
+  .text-2-3-2 {
+    position: absolute;
+    left: 22px;
+    top: 358.7738952636719px;
+    width: 57px;
+    height: 18.08944320678711px;
+    color: #00000033;
+    font-size: 16px;
+    font-family: Arial, "Regular";
+    font-weight: 400;
+    text-align: left;
+    vertical-align: top;
+  }
+  .container-2-3-2 {
+    position: absolute;
+    left: 33.986328125px;
+    top: 86.42733764648438px;
+    width: 31.98728370666504px;
+    height: 34.1689453125px;
+    background-color: #ffffff;
+    justify-content: start;
+    align-items: start;
+  }

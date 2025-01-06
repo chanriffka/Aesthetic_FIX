@@ -1,0 +1,40 @@
+.custom-header-font {
+    font-family: "Inter", sans-serif;
+    font-weight: 300;
+    }
+
+    .nav-item {
+        position: relative;
+        padding-bottom: 3px;
+    }
+
+    .nav-item::before {
+        content: '';
+        position: absolute;
+        left: 50%;
+        bottom: 0;
+        width: 0;
+        height: 2px;
+        background-color: #4f46e5; /* Indigo color for underline */
+        transition: width 0.3s ease, left 0.3s ease;
+    }
+
+    .nav-item:hover::before {
+        width: 100%;
+        left: 0;
+    }
+
+    .nav-item a {
+        text-decoration: none;
+        color: inherit;
+    }
+
+    .navbar-active::before {
+        content: '';
+        position: absolute;
+        left: 0;
+        bottom: 0;
+        width: 100%;
+        height: 2px;
+        background-color: #4f46e5; /* Indigo underline for active page */
+    }
