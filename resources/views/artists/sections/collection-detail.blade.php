@@ -42,7 +42,7 @@
 </head>
 <body class="container mx-auto p-6">
 <!-- Back Button with Arrow Icon -->
-<a href="javascript:history.back()" 
+<a href="{{ route('artist.show', ['id' => $collection->Artist->ARTIST_ID, 'section' => 'collection']) }}" {{-- Ubah Route supaya bisa langsung kembali ke halaman sebelumnya tanpa harus klik berkali kali after add/delete art dari koleksi --}}
    class="inline-flex items-center px-4 py-2 bg-indigo-600 text-white rounded-full hover:bg-indigo-300 transition duration-300 shadow-sm mt-4">
     <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="white" stroke-width="2">
         <path stroke-linecap="round" stroke-linejoin="round" d="M19 12H5M12 19l-7-7 7-7" />
@@ -60,7 +60,7 @@
             @endif
         @endif
     </div>
-    
+
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
         <!-- Loop through the artworks -->
         @foreach($collection->ArtistCollections as $artwork)
@@ -73,7 +73,7 @@
                         <path stroke-linecap="round" stroke-linejoin="round" d="M6.75 12a.75.75 0 1 1-1.5 0 .75.75 0 0 1 0 1.5ZM12.75 12a.75.75 0 1 1-1.5 0 .75.75 0 0 1 0 1.5ZM18.75 12a.75.75 0 1 1-1.5 0 .75.75 0 0 1 0 1.5Z" />
                     </svg>
                 </button>
-                
+
                 <!-- Options Menu -->
                 <div class="optionsMenu">
                     <button class="block w-full text-left px-4 py-2 hover:bg-gray-100" onclick="confirmDeleteArtwork({{ $artwork->ART_COLLECTION_ID }},'{{ $artwork->Art->ART_TITLE }}')" >Delete from this collection</button>
@@ -85,7 +85,7 @@
                 <img src="{{ Str::startsWith($artwork->Art->ArtImages()->first()->IMAGE_PATH, 'images/art/') ? asset($artwork->Art->ArtImages()->first()->IMAGE_PATH) : $artwork->Art->ArtImages()->first()->IMAGE_PATH }}" alt="{{ $artwork->Art->ART_TITLE }}"
                     class="w-full h-64 object-cover rounded-t-lg transition-transform duration-300 transform group-hover:scale-105">
             </a>
-            
+
             <div class="p-6">
                 <!-- Increased Interest Badge -->
                 {{-- @if($artwork['interest'])
@@ -118,7 +118,7 @@
     <!-- Add Artwork Collection Modal -->
     <div id="addArtModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden">
         <div class="bg-white rounded-lg shadow-lg max-w-4xl w-full p-6">
-            
+
             <!-- Modal Header -->
             <div class="flex justify-between items-center mb-6">
                 <h2 class="text-2xl font-bold text-gray-800">Add Artwork Collection</h2>
@@ -141,10 +141,10 @@
                         <img src="{{ Str::startsWith($artwork->ArtImages()->first()->IMAGE_PATH, 'images/art/') ? asset($artwork->ArtImages()->first()->IMAGE_PATH) : $artwork->ArtImages()->first()->IMAGE_PATH }}" alt="Artwork {{ $artwork->ART_TITLE }}" class="w-full h-48 object-cover">
                         <div class="absolute top-2 left-2">
                             <!-- Add a meaningful ID or name if necessary -->
-                            <input 
-                                    type="checkbox" 
-                                    class="w-6 h-6 text-indigo-500 focus:ring focus:ring-indigo-300" 
-                                    value="{{ $artwork->ART_ID }}" 
+                            <input
+                                    type="checkbox"
+                                    class="w-6 h-6 text-indigo-500 focus:ring focus:ring-indigo-300"
+                                    value="{{ $artwork->ART_ID }}"
                                     name="artworks[]"
                                 >
                         </div>

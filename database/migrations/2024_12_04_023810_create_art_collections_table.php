@@ -16,7 +16,7 @@ return new class extends Migration
             $table->unsignedBigInteger('ARTIST_COLLECTION_ID');
             $table->foreign('ARTIST_COLLECTION_ID')->references('ARTIST_COLLECTION_ID')->on('ARTIST_COLLECTION')->onUpdate('cascade')->onDelete('cascade');
             $table->unsignedBigInteger('ART_ID');
-            $table->foreign('ART_ID')->references('ART_ID')->on('ART')->onUpdate('cascade')->onDelete('cascade');
+            $table->foreign('ART_ID')->references('ART_ID')->on('ART')->onUpdate('no action')->onDelete('no action');
             $table->timestamps();
         });
     }

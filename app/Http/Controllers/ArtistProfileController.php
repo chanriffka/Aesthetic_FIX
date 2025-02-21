@@ -43,9 +43,26 @@ class ArtistProfileController extends Controller
         $artist->addView();
 
         $portfolios = Art::where('USER_ID',$artist->USER_ID)->where('IS_SALE',false)->get();
-        $artWorks = Art::where('USER_ID',$artist->USER_ID)->where('IS_SALE',true)->get();
+        if(Auth::user()->USER_LEVEL == 2 || Auth::user()->USER_LEVEL == 3){
+            $artWorks = Art::where('USER_ID',$artist->USER_ID)->where('IS_SALE',true)->get();
+        }
+        else
+        {
+            $artWorks = Art::where('USER_ID',$artist->USER_ID)
+                        ->where('IS_SALE',true)
+                        ->where('IS_VERIF', true)
+                        ->get();
+        }
+        
         $artCategoriesMaster = ArtCategoryMaster::all();
-        $posts = Post::where('ARTIST_ID','=',$ARTIST_ID)->get();
+        $posts = Post::where('ARTIST_ID','=',$ARTIST_ID)
+                        ->orderBy('created_at', 'desc')
+                        ->get();
+
+        $latestPosts = Post::where('ARTIST_ID', $ARTIST_ID) 
+                        ->orderBy('created_at', 'desc')
+                        ->first();
+
         $hire = ArtistHire::where('ARTIST_ID','=',$ARTIST_ID)->first();
 
         $excludedSkillIds = ArtistSkill::where('ARTIST_ID', $artist->ARTIST_ID)
@@ -62,7 +79,7 @@ class ArtistProfileController extends Controller
             } else {
                 $artistItSelf = false;
             }
-            return view('artists.show', compact('artist','section','artistItSelf','portfolios','artWorks','artCategoriesMaster','posts', 'hire', 'skillsMaster', 'carts')); //ABOUT RENDER
+            return view('artists.show', compact('artist','section','artistItSelf','portfolios','latestPosts','artWorks','artCategoriesMaster','posts', 'hire', 'skillsMaster', 'carts')); //ABOUT RENDER
         }
     }
 
@@ -71,15 +88,13 @@ class ArtistProfileController extends Controller
         $user = Auth::user();
         $artist = Artist::where('USER_ID',$user->USER_ID)->first();
 
-        $validator = Validator::make($request->all(), [
-            'ABOUT' => 'required',
-        ]);
-
-        if ($validator->fails()) {
-            return redirect()->back()->withErrors($validator->all());
+        if($request->ABOUT == NULL){
+            $artist->ABOUT = "";
         }
-
-        $artist->ABOUT = $request->ABOUT;
+        else{
+            $artist->ABOUT = $request->ABOUT;
+        }
+        
         $artist->save();
 
         return redirect()->back();
@@ -158,7 +173,8 @@ class ArtistProfileController extends Controller
             }
         }
 
-        $buyer->PHONE_NUMBER = $request->phone;
+        // $buyer->PHONE_NUMBER = "+62" . $request->phone;
+        $buyer->PHONE_NUMBER = "+62" . $request->phone;
         $buyer->PROFILE_IMAGE_URL = $imagePath;
         $buyer->save();
 
@@ -169,6 +185,15 @@ class ArtistProfileController extends Controller
     {
         $user = Auth::user();
         $artist = Artist::find($id);
+
+        $validator = Validator::make($request->all(), [
+            'rating' => 'required',
+            'content' => 'required',
+        ]);
+
+        if ($validator->fails()) {
+            return redirect()->back()->withErrors($validator);
+        }
 
         if($artist == null) {
             return redirect()->back()->withErrors(['message'=>'Artist not found!']);

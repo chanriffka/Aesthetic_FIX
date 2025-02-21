@@ -16,7 +16,7 @@ return new class extends Migration
             $table->unsignedBigInteger('USER_ID');
             $table->foreign('USER_ID')->references('USER_ID')->on('MASTER_USER')->onUpdate('cascade')->onDelete('cascade');
             $table->unsignedBigInteger('HIRE_QUESTION_ID');
-            $table->foreign('HIRE_QUESTION_ID')->references('HIRE_QUESTION_ID')->on('HIRE_QUESTION')->onUpdate('cascade')->onDelete('cascade');
+            $table->foreign('HIRE_QUESTION_ID')->references('HIRE_QUESTION_ID')->on('HIRE_QUESTION')->onUpdate('no action')->onDelete('no action');
             $table->text('REPLY');
             $table->timestamps();
         });

@@ -91,7 +91,7 @@ class ArtistCollectionController extends Controller
     {
         $request->validate([
             'artworks' => 'array',
-            'artworks.*' => 'exists:art,ART_ID',
+            'artworks.*' => 'exists:ART,ART_ID', //FIX "art" jadi "ART" supaya bisa di website
         ]);
 
         $collection = ArtistCollection::where('ARTIST_COLLECTION_ID',$collectionId)->first();

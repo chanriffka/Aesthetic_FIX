@@ -22,7 +22,7 @@ return new class extends Migration
             $table->foreign('FOLLOWER_USER_ID')->references('USER_ID')->on('MASTER_USER')->onUpdate('cascade')->onDelete('cascade');
 
             // Foreign key for FOLLOWED_ID without cascade delete
-            $table->foreign('FOLLOWED_USER_ID')->references('USER_ID')->on('MASTER_USER')->onUpdate('cascade')->onDelete('cascade');
+            $table->foreign('FOLLOWED_USER_ID')->references('USER_ID')->on('MASTER_USER')->onUpdate('no action')->onDelete('no action');
         });
 
         

@@ -85,19 +85,18 @@ class ArtistPostController extends Controller
         ]);
 
         $imagePath = null;
-
-        // If URL is provided
         if ($request->filled('postImageLink')) {
             $imagePath = $request->input('postImageLink');
-            $post->PostMedias()->create([
-                'POST_MEDIA_PATH' => $imagePath
-            ]);
         }
 
         // If file is uploaded
         if ($request->hasFile('postImageUpload')) {
             $uploadedFile = $request->file('postImageUpload');
             $imagePath = $uploadedFile->store('images/post', 'public'); // Save file in the `storage/app/public/images/art` directory
+        }
+        
+        if($imagePath !== null)
+        {
             $post->PostMedias()->create([
                 'POST_MEDIA_PATH' => $imagePath
             ]);
@@ -125,6 +124,18 @@ class ArtistPostController extends Controller
                 }
             }
         }
+
+        if($post->PostLikes->count() > 0 ){
+            foreach($post->PostLikes as $like) {
+                $like->delete();
+            }
+        }
+
+        if($post->PostComments->count() > 0 ){  
+            foreach($post->PostComments as $comment) {
+                $comment->delete();
+            }
+        }
         
         $post->delete();
         return redirect()->back()->with('status','Post has been deleted!');
@@ -146,5 +157,82 @@ class ArtistPostController extends Controller
         }
 
         return redirect()->back()->with('status','Post being liked!');
+    }
+
+    public function getArtistPostData($postId){
+        // Fetch the artist and related user data
+        $post = DB::table('POST')
+            ->join('POST_MEDIA', 'POST.POST_ID', '=', 'POST_MEDIA.POST_ID')
+            ->where('POST.POST_ID', $postId)
+            ->select('POST.*', 'POST_MEDIA.POST_MEDIA_PATH') // Select fields as needed
+            ->first();
+
+        // Check if artist exists
+        if (!$post) {
+            return response()->json(['error' => 'Post not found'], 404);
+        }
+
+        return response()->json($post);
+    }
+
+    public function update(Request $request, $postId){
+        $user = Auth::guard('MasterUser')->user();
+        $artist = Artist::where('ARTIST_ID','=',$user->Artist->ARTIST_ID)->first();
+        $post = Post::find($postId);
+
+
+        if ($post == null) {
+            abort(404, 'Post not found.');
+        }
+
+        $validated = Validator::make($request->all(), [
+            'postContentEdit' => 'required'
+        ], [
+            'postContentEdit.required' => '* The post content is required.'
+        ]);
+
+        if ($validated->fails()) {
+            return redirect()->back()->withError($validated->error());
+        }
+
+        $post->CONTENT = $request->postContentEdit;
+
+        $imagePath = null;
+
+        // If URL is provided
+        if ($request->filled('postImageLinkEdit')) {
+            $imagePath = $request->input('postImageLinkEdit');
+            $this->deleteImage($post->POST_ID);
+        }
+
+        // If file is uploaded
+        if ($request->hasFile('postImageUploadEdit')) {
+            $uploadedFile = $request->file('postImageUploadEdit');
+            $imagePath = $uploadedFile->store('images/post', 'public'); // Save file in the `storage/app/public/images/art` directory
+            $this->deleteImage($post->POST_ID);
+        }
+
+        if($imagePath != null) {
+            $post->PostMedias()->create([
+                'POST_MEDIA_PATH' => $imagePath
+            ]);
+        }
+
+        $post->save();
+        return redirect()->back()->with('status','Post has been updated!');
+    }
+
+    public function deleteImage($postId)
+    {
+        $postMedia = PostMedia::where('POST_ID',$postId)->get();
+        foreach($postMedia as $media) {
+            if ($media->POST_MEDIA_PATH != null) {
+                if(Str::startsWith($media->IMAGE_PATH, 'images/post/')) {
+                    $filePath = $media->IMAGE_PATH;
+                    Storage::disk('public')->delete($filePath);
+                }
+            }
+            $media->delete();
+        }
     }
 }

@@ -14,12 +14,6 @@
          
         <!-- User Interaction Icons (Alert, Message, Profile) -->
         <div class="flex space-x-6 items-center">
-            <!-- Notification Icon (Bell) -->
-            <div class="relative">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="h-6 w-6 text-black cursor-pointer hover:text-indigo-600 transition">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M14.857 17.082a23.848 23.848 0 0 0 5.454-1.31A8.967 8.967 0 0 1 18 9.75V9A6 6 0 0 0 6 9v.75a8.967 8.967 0 0 1-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 0 1-5.714 0m5.714 0a3 3 0 1 1-5.714 0" />
-                </svg>
-            </div>
 
             <!-- Message Icon (Cart) -->
             <div class="relative">
@@ -83,19 +77,28 @@
                         @endif
                 @endif
                 @if (Auth::user()->Artist != null)
-                        @if(Auth::user()->Artist->isActive())
+                        @if(Auth::user()->Artist->isActive() && !(Auth::user()->Artist->isBan()))
                         <div class="flex items-center mb-1 hover:bg-gray-100 p-2 rounded-lg cursor-pointer">
                                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5 text-black mr-3">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M18 18.72a9.094 9.094 0 0 0 3.741-.479 3 3 0 0 0-4.682-2.72m.94 3.198.001.031c0 .225-.012.447-.037.666A11.944 11.944 0 0 1 12 21c-2.17 0-4.207-.576-5.963-1.584A6.062 6.062 0 0 1 6 18.719m12 0a5.971 5.971 0 0 0-.941-3.197m0 0A5.995 5.995 0 0 0 12 12.75a5.995 5.995 0 0 0-5.058 2.772m0 0a3 3 0 0 0-4.681 2.72 8.986 8.986 0 0 0 3.74.477m.94-3.197a5.971 5.971 0 0 0-.94 3.197M15 6.75a3 3 0 1 1-6 0 3 3 0 0 1 6 0Zm6 3a2.25 2.25 0 1 1-4.5 0 2.25 2.25 0 0 1 4.5 0Zm-13.5 0a2.25 2.25 0 1 1-4.5 0 2.25 2.25 0 0 1 4.5 0Z" />
                                 </svg>
                                 <a href="{{ route('artist.show', Auth::user()->artist->ARTIST_ID) }}" class="text-gray-800 hover">Artist Profile</a>
                         </div>
-                        @else
+                        @elseif(Auth::user()->Artist->isBan())
                         <div class="flex text-red-600 items-center mb-1 hover:bg-gray-100 p-2 rounded-lg cursor-pointer">
                                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5 text-red-600 mr-3">
                                         <path stroke-linecap="round" stroke-linejoin="round" d="M18 18.72a9.094 9.094 0 0 0 3.741-.479 3 3 0 0 0-4.682-2.72m.94 3.198.001.031c0 .225-.012.447-.037.666A11.944 11.944 0 0 1 12 21c-2.17 0-4.207-.576-5.963-1.584A6.062 6.062 0 0 1 6 18.719m12 0a5.971 5.971 0 0 0-.941-3.197m0 0A5.995 5.995 0 0 0 12 12.75a5.995 5.995 0 0 0-5.058 2.772m0 0a3 3 0 0 0-4.681 2.72 8.986 8.986 0 0 0 3.74.477m.94-3.197a5.971 5.971 0 0 0-.94 3.197M15 6.75a3 3 0 1 1-6 0 3 3 0 0 1 6 0Zm6 3a2.25 2.25 0 1 1-4.5 0 2.25 2.25 0 0 1 4.5 0Zm-13.5 0a2.25 2.25 0 1 1-4.5 0 2.25 2.25 0 0 1 4.5 0Z" />
                                 </svg>
-                                Artist account inactive
+                                <button onclick="openBannedModal()" class="text-red-500 hover">Artist account inactive</button>
+                                
+                        </div>
+                        @elseif(!(Auth::user()->Artist->isActive()))
+                        <div class="flex text-gray-600 items-center mb-1 hover:bg-gray-100 p-2 rounded-lg cursor-pointer">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5 text-gray-600 mr-3">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M18 18.72a9.094 9.094 0 0 0 3.741-.479 3 3 0 0 0-4.682-2.72m.94 3.198.001.031c0 .225-.012.447-.037.666A11.944 11.944 0 0 1 12 21c-2.17 0-4.207-.576-5.963-1.584A6.062 6.062 0 0 1 6 18.719m12 0a5.971 5.971 0 0 0-.941-3.197m0 0A5.995 5.995 0 0 0 12 12.75a5.995 5.995 0 0 0-5.058 2.772m0 0a3 3 0 0 0-4.681 2.72 8.986 8.986 0 0 0 3.74.477m.94-3.197a5.971 5.971 0 0 0-.94 3.197M15 6.75a3 3 0 1 1-6 0 3 3 0 0 1 6 0Zm6 3a2.25 2.25 0 1 1-4.5 0 2.25 2.25 0 0 1 4.5 0Zm-13.5 0a2.25 2.25 0 1 1-4.5 0 2.25 2.25 0 0 1 4.5 0Z" />
+                                </svg>
+                                
+                                <button onclick="" class="text-gray-500 hover" disabled>Awaiting Review...</button>
                         </div>
                         @endif
                 @endif
@@ -107,19 +110,21 @@
                         <a href="{{ route('admin.dashboard') }}" class="text-gray-800 hover">Admin Dashboard</a>
                 </div>
                 @endif
-                @if (Auth::user()->Artist != null)
-                <div class="flex items-center mb-1 hover:bg-gray-100 p-2 rounded-lg cursor-pointer">
+                @if(Auth::user()->USER_LEVEL == 2)
+                        @if (Auth::user()->Artist->isActive())
+                        <div class="flex items-center mb-1 hover:bg-gray-100 p-2 rounded-lg cursor-pointer">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5 text-black mr-3">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 0 1 3 19.875v-6.75ZM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 0 1-1.125-1.125V8.625ZM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 0 1-1.125-1.125V4.125Z" />
+                                </svg>
+                                <a href="{{ route('insight-artist') }}" class="text-gray-800 hover">Insights</a>
+                        </div>
+                        <div class="flex items-center mb-1 hover:bg-gray-100 p-2 rounded-lg cursor-pointer">
                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5 text-black mr-3">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 0 1 3 19.875v-6.75ZM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 0 1-1.125-1.125V8.625ZM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 0 1-1.125-1.125V4.125Z" />
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 18.75a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m3 0h6m-9 0H3.375a1.125 1.125 0 0 1-1.125-1.125V14.25m17.25 4.5a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m3 0h1.125c.621 0 1.129-.504 1.09-1.124a17.902 17.902 0 0 0-3.213-9.193 2.056 2.056 0 0 0-1.58-.86H14.25M16.5 18.75h-2.25m0-11.177v-.958c0-.568-.422-1.048-.987-1.106a48.554 48.554 0 0 0-10.026 0 1.106 1.106 0 0 0-.987 1.106v7.635m12-6.677v6.677m0 4.5v-4.5m0 0h-12" />
                         </svg>
-                        <a href="{{ route('insight-artist') }}" class="text-gray-800 hover">Insights</a>
-                </div>
-                <div class="flex items-center mb-1 hover:bg-gray-100 p-2 rounded-lg cursor-pointer">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5 text-black mr-3">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 18.75a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m3 0h6m-9 0H3.375a1.125 1.125 0 0 1-1.125-1.125V14.25m17.25 4.5a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m3 0h1.125c.621 0 1.129-.504 1.09-1.124a17.902 17.902 0 0 0-3.213-9.193 2.056 2.056 0 0 0-1.58-.86H14.25M16.5 18.75h-2.25m0-11.177v-.958c0-.568-.422-1.048-.987-1.106a48.554 48.554 0 0 0-10.026 0 1.106 1.106 0 0 0-.987 1.106v7.635m12-6.677v6.677m0 4.5v-4.5m0 0h-12" />
-                </svg>
-                        <a href="{{ route('artist.order') }}" class="text-gray-800 hover">Update Order</a>
-                </div>
+                                <a href="{{ route('artist.order') }}" class="text-gray-800 hover">Update Order</a>
+                        </div>
+                        @endif
                 @endif
         </div>
 
@@ -175,4 +180,44 @@
                 </div>
         </div>                          
     </div>
+        
+
+    
 </nav>
+<div id="bannedModal" class="modal fixed top-0 left-0 w-screen h-screen bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+        <div class="bg-white rounded-lg shadow-lg max-w-md w-full p-8 fade-in text-center">
+            <h3 class="text-2xl font-bold text-primary">Attention!</h3>
+    
+            <!-- Centering the Exclamation Mark -->
+            <div class="flex justify-center mt-4">
+                <span class="flex items-center justify-center rounded-full bg-violet-600 text-white font-bold" style="width:3.5rem; height:3.5rem; font-size: 2.5rem;">
+                    !
+                </span>
+            </div>
+    
+            <p class="mt-4 text-gray-600">
+                Your account as an artist have been disabled 
+            </p>
+            <p class="text-gray-600">
+                Please contact admin to make an appeal
+            </p>
+            <button onclick="closeBannedModal()" class="mt-6 bg-indigo-500 text-white px-6 py-3 rounded-lg shadow-lg hover:bg-indigo-700 transition">
+                Close
+            </button>
+        </div>
+    </div>
+    
+    
+<script>
+
+        function openBannedModal() {
+                document.getElementById('bannedModal').classList.remove('hidden');
+                document.body.classList.add('overflow-hidden'); // Prevent scrolling
+        }
+
+        function closeBannedModal() {
+                document.getElementById('bannedModal').classList.add('hidden');
+                document.body.classList.remove('overflow-hidden'); // Restore scrolling
+        }
+
+</script>

@@ -76,11 +76,12 @@ class AuthController extends Controller
             $artist = $user->Artist;
 
             $buyerInactive = $user->Buyer && $user->Buyer->IS_ACTIVE == 0;
-            $artistInactive = $user->Artist && $user->Artist->IS_ACTIVE == 0;
+            // $artistInactive = $user->Artist && $user->Artist->IS_ACTIVE == 0;
 
-            if ($buyerInactive || $artistInactive) {
+            if ($buyerInactive) {
                 Auth::guard('MasterUser')->logout(); // Log out the user
-                return redirect()->route('login')->withErrors(['Your account is inactive.']);
+                return redirect()->route('login')->withErrors([
+                    'Inactive' => 'Warning!']);
             }
 
             if($user->USER_LEVEL == 3) {
@@ -90,7 +91,7 @@ class AuthController extends Controller
             }
         } else {
             return redirect()->back()->withErrors([
-                'authorization' => 'Account not authorized!'
+                'authorization' => 'Warning!'
             ]);
         }
     }
@@ -110,5 +111,36 @@ class AuthController extends Controller
         }
         
         return redirect()->route('landing');
+    }
+
+    public function resetpassword(Request $request)
+    {
+        if (Auth::guard('MasterUser')->check()) {
+            return redirect()->route('landing');
+        }
+        
+        return view('resetpassword'); 
+    }
+
+    public function resetPasswordPost(Request $request){
+
+        $credentials = $request->only('email', 'password');
+
+        if (Auth::guard('MasterUser')->attempt($credentials)) {
+            // Fetch the MasterUser instance
+            $MasterUser = MasterUser::where('EMAIL', '=', $request->email)->first();
+
+            // Update the password
+            $MasterUser->PASSWORD = Hash::make($request->newPassword);
+            $MasterUser->save();
+
+            Auth::guard('MasterUser')->logout();
+            return redirect()->route('login')->with('status', 'Password has been reset successfully.');
+        } else {
+            return redirect()->back()->withErrors([
+                'authorization' => 'Warning! Wrong Email Or Password'
+            ]);
+        }
+
     }
 }

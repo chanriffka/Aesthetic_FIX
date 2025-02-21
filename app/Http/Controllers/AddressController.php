@@ -23,6 +23,13 @@ class AddressController extends Controller
         return view('layouts.new-address');
     }
 
+    public function edit($addressId)
+    {
+        $address = Address::find($addressId);
+
+        return view('layouts.edit-address', compact('address'));
+    }
+
     public function store(Request $request) {
         $user = Auth::user();
 
@@ -46,6 +53,34 @@ class AddressController extends Controller
         }
 
         $user->Addresses()->create($request->all());
+
+        return redirect()->route('order.address.show')->with('status','New address has been added!');
+    }
+
+    public function update(Request $request,$addressId) {
+        $user = Auth::user();
+        $address = Address::find($addressId);
+
+        $validated = Validator::make($request->all(), [
+            'FULLNAME' => 'required',
+            'PHONE' => 'required',
+            'ADDRESS' => 'required',
+            'PROVINCE' => 'required',
+            'CITY' => 'required',
+            'POSTAL_CODE' => 'required',
+        ]);
+
+        if ($validated->fails()) {
+            return redirect()->back()->withError($validated->error());
+        }
+
+        $address->FULLNAME = $request->FULLNAME;
+        $address->PHONE = $request->PHONE;
+        $address->ADDRESS = $request->ADDRESS;
+        $address->PROVINCE = $request->PROVINCE;
+        $address->CITY = $request->CITY;
+        $address->POSTAL_CODE = $request->POSTAL_CODE;
+        $address->save();
 
         return redirect()->route('order.address.show')->with('status','New address has been added!');
     }

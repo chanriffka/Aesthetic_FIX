@@ -15,20 +15,63 @@ class ListArtistController extends Controller
         $carts = null;
         if(Auth::user() != null) {
             $carts = Auth::user()->Carts;
+        
+
+            if(Auth::user()->USER_LEVEL == 2) {
+                $listArtist = Artist::where('IS_ACTIVE',true)
+                                ->where('IS_BAN', false)
+                                ->where('ARTIST_ID','!=',Auth::User()->Artist->ARTIST_ID) 
+                                ->get();
+                $skills = SkillMaster::all();
+
+                $countArtist = $listArtist->COUNT();
+
+                // DB::table('ARTIST')
+                //             ->select('ARTIST.ARTIST_ID', DB::raw('DATEDIFF(day, ARTIST.JOIN_DATE, GETDATE()) AS JOINED'), 'MASTER_USER.USERNAME', 'ARTIST.LOCATION', 'ARTIST.ROLE','ARTIST.BIO', 'MASTER_USER.PROFILE_IMAGE_PATH')
+                //             ->join('MASTER_USER', 'ARTIST.USER_ID', '=', 'MASTER_USER.USER_ID')
+                //             ->get();
+
+                return view('artists.index', compact('countArtist','listArtist','carts', 'skills'));
+            }
+            else
+            {
+            
+    
+                $listArtist = Artist::where('IS_ACTIVE',true)
+                                    ->where('IS_BAN', false)
+                                    ->get();
+                $skills = SkillMaster::all();
+    
+                $countArtist = $listArtist->COUNT();
+    
+                // DB::table('ARTIST')
+                //             ->select('ARTIST.ARTIST_ID', DB::raw('DATEDIFF(day, ARTIST.JOIN_DATE, GETDATE()) AS JOINED'), 'MASTER_USER.USERNAME', 'ARTIST.LOCATION', 'ARTIST.ROLE','ARTIST.BIO', 'MASTER_USER.PROFILE_IMAGE_PATH')
+                //             ->join('MASTER_USER', 'ARTIST.USER_ID', '=', 'MASTER_USER.USER_ID')
+                //             ->get();
+    
+                return view('artists.index', compact('countArtist','listArtist','carts', 'skills'));
+                
+    
+            }
+        }
+        else{
         }
 
-        $countArtist = Artist::where('IS_ACTIVE',true)->count();
+            $listArtist = Artist::where('IS_ACTIVE',true)
+                                ->where('IS_BAN', false)
+                                ->get();
+            $skills = SkillMaster::all();
 
-        $listArtist = Artist::where('IS_ACTIVE',true)->get();
-        $skills = SkillMaster::all();
+            $countArtist = $listArtist->COUNT();
 
-        // DB::table('ARTIST')
-        //             ->select('ARTIST.ARTIST_ID', DB::raw('DATEDIFF(day, ARTIST.JOIN_DATE, GETDATE()) AS JOINED'), 'MASTER_USER.USERNAME', 'ARTIST.LOCATION', 'ARTIST.ROLE','ARTIST.BIO', 'MASTER_USER.PROFILE_IMAGE_PATH')
-        //             ->join('MASTER_USER', 'ARTIST.USER_ID', '=', 'MASTER_USER.USER_ID')
-        //             ->get();
+            // DB::table('ARTIST')
+            //             ->select('ARTIST.ARTIST_ID', DB::raw('DATEDIFF(day, ARTIST.JOIN_DATE, GETDATE()) AS JOINED'), 'MASTER_USER.USERNAME', 'ARTIST.LOCATION', 'ARTIST.ROLE','ARTIST.BIO', 'MASTER_USER.PROFILE_IMAGE_PATH')
+            //             ->join('MASTER_USER', 'ARTIST.USER_ID', '=', 'MASTER_USER.USER_ID')
+            //             ->get();
 
-        return view('artists.index', compact('countArtist','listArtist','carts', 'skills'));
+            return view('artists.index', compact('countArtist','listArtist','carts', 'skills'));
+            
 
-    }
+        }
 
 }

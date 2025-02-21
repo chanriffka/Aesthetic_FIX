@@ -55,44 +55,53 @@
  <div class="mt-8">
   @foreach ($posts as $post )
   <!-- Post Example -->
-  <a href="{{ route('post.detail',['id'=>$post->POST_ID]) }}">
-    <div class="bg-white p-4 rounded-lg shadow-md mb-4 border border-gray-300 post-card relative cursor-pointer" id="artistPost" data-post-id="{{ $post->POST_ID }}" data-delete-route="{{ route('post.destroy', $post->POST_ID) }}" onclick="showPostDetail({{ $post->POST_ID }})">
-      <!-- Options Menu and Profile Section Omitted for Brevity -->
-      {{-- <button class="ellipsisButton text-gray-600 hover:text-gray-800 focus:outline-none" onclick="toggleOptionsMenu(event, this)">
-        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M6.75 12a.75.75 0 1 1-1.5 0 .75.75 0 0 1 0 1.5ZM12.75 12a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0ZM18.75 12a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Z" />
-        </svg>
-      </button>
-      <!-- Options Menu -->
-      <div class="optionsMenu">
-        <button class="block w-full text-left px-4 py-2 hover:bg-gray-100">Edit Post</button>
-        <button class="block w-full text-left px-4 py-2 hover:bg-gray-100" onclick="confirmDeletePost(event,{{ $post->POST_ID }})" data-post-id="{{ $post->POST_ID }}">Delete Post</button>
-      </div> --}}
-  
-      <div class="flex items-center space-x-4">
-        <img alt="Profile picture of the user" class="w-10 h-10 rounded-full" src="{{ $post->Artist->MasterUser->Buyer->PROFILE_IMAGE_URL != null ? asset($post->Artist->MasterUser->Buyer->PROFILE_IMAGE_URL) : "https://placehold.co/100x100"}}">
-        <div>
-          <h2 class="text-lg font-bold">{{ $post->Artist->MasterUser->Buyer->FULLNAME }}</h2>
-          <p class="text-sm text-gray-600">{{ $post->created_at }}</p>
-        </div>
-      </div>
-      <p class="mt-4 text-sm">{{ $post->CONTENT }}</p>
-  
-      <!-- Image Container -->
-      @if($post->PostMedias->count() > 0)
-      <div class="aspect-w-2 aspect-h-1 mt-4 rounded-lg overflow-hidden">
-        <img alt="Anime character with pink hair" class="aspect-inner object-cover" src="{{ Str::startsWith($post->PostMedias()->first()->POST_MEDIA_PATH, 'images/post/') ? asset($post->PostMedias()->first()->POST_MEDIA_PATH) : $post->PostMedias()->first()->POST_MEDIA_PATH }}">
-      </div>
-      @endif
-  
-      <div class="mt-2 flex space-x-4 text-gray-600 text-sm">
-        <button class="flex items-center space-x-1"><i class="fas fa-heart text-red-500"></i><span>{{ $post->PostLikes->count() }}</span></button>
-        <button class="flex items-center space-x-1"><i class="far fa-comment"></i><span id="postTotalComments-9999">{{ $post->PostComments->count() }}</span></button>
-      </div>
+  <div class="bg-white p-4 rounded-lg shadow-md mb-4 border border-gray-300 post-card relative cursor-pointer" id="artistPost" data-post-id="{{ $post->POST_ID }}" data-delete-route="{{ route('post.destroy', $post->POST_ID) }}">
+    @if(Auth::check())
+        @if (Auth::user()->USER_ID == $artist->USER_ID )
+    <!-- Ellipsis Button (Outside <a> tag) -->
+    <button class="absolute top-2 right-2 ellipsisButton text-gray-600 hover:text-gray-800 focus:outline-none" onclick="toggleOptionsMenu(event, this)">
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M6.75 12a.75.75 0 1 1-1.5 0 .75.75 0 0 1 0 1.5ZM12.75 12a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0ZM18.75 12a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Z" />
+      </svg>
+    </button>
+        @endif
+    @endif
+
+    <!-- Options Menu -->
+    <div class="optionsMenu hidden absolute right-2 top-10 bg-white border rounded-lg shadow-md">
+      <button class="block w-full text-left px-4 py-2 hover:bg-gray-100" onclick="openEditPostModal(event,{{ $post->POST_ID }})" data-post-id="{{ $post->POST_ID }}">Edit Post</button>
+      <button class="block w-full text-left px-4 py-2 hover:bg-gray-100" onclick="confirmDeletePost(event,{{ $post->POST_ID }})" data-post-id="{{ $post->POST_ID }}">Delete Post</button>
     </div>
-  </a>
+
+    <!-- Clickable Post Content -->
+    <a href="{{ route('post.detail',['id'=>$post->POST_ID]) }}">
+      <div onclick="showPostDetail({{ $post->POST_ID }})">
+        <div class="flex items-center space-x-4">
+          <img alt="Profile picture of the user" class="w-10 h-10 rounded-full" src="{{ $post->Artist->MasterUser->Buyer->PROFILE_IMAGE_URL != null ? asset($post->Artist->MasterUser->Buyer->PROFILE_IMAGE_URL) : 'https://placehold.co/100x100' }}">
+          <div>
+            <h2 class="text-lg font-bold">{{ $post->Artist->MasterUser->Buyer->FULLNAME }}</h2>
+            <p class="text-sm text-gray-600">{{ $post->created_at }}</p>
+          </div>
+        </div>
+        <p class="mt-4 text-sm">{{ $post->CONTENT }}</p>
+
+        @if($post->PostMedias->count() > 0)
+            <div class="aspect-w-2 aspect-h-1 mt-4 rounded-lg overflow-hidden">
+                <img alt="Anime character with pink hair" 
+                    class="aspect-inner object-cover" 
+                    src="{{ Str::startsWith($post->PostMedias->first()->POST_MEDIA_PATH, 'images/post/') ? asset($post->PostMedias->first()->POST_MEDIA_PATH) : $post->PostMedias->first()->POST_MEDIA_PATH }}">
+            </div>
+        @endif
+      </div>
+    </a>
+
+    <!-- Like & Comment Section -->
+    <div class="mt-2 flex space-x-4 text-gray-600 text-sm">
+      <button class="flex items-center space-x-1"><i class="fas fa-heart text-red-500"></i><span>{{ $post->PostLikes->count() }}</span></button>
+      <button class="flex items-center space-x-1"><i class="far fa-comment"></i><span id="postTotalComments-9999">{{ $post->PostComments->count() }}</span></button>
+    </div>
+  </div>
   @endforeach
-</div>
 </div>
   
   <!-- Post Detail Modal -->
@@ -148,7 +157,11 @@
 
 <!-- Add Post Modal -->
 <div id="addPostModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden modal-overlay">
-    <div class="bg-white p-8 rounded-lg shadow-lg w-full max-w-2xl">
+    <div class="bg-white p-8 rounded-lg shadow-lg w-full max-w-2xl"
+    x-data="{
+      uploadOption: 'link',
+      imagePreview: ''
+    }">
       <h3 class="text-2xl font-semibold text-gray-800 mb-2">Add New Post ✉️ </h3>
       <form method="POST" action="{{ route('post.store') }}" enctype="multipart/form-data" id="addPostForm" class="space-y-6">
         @csrf
@@ -161,25 +174,35 @@
         <div>
           <label class="block text-lg font-semibold text-gray-700 mb-2">Select Image Upload Option</label>
           <div class="flex items-center mb-4">
-              <input type="radio" id="linkOption" name="imageOption" value="link" class="mr-3" onclick="toggleImageUploadOption('link')" checked>
+              <input type="radio" id="linkOption" name="imageOption" value="link" x-model="uploadOption" class="mr-3" checked>
               <label for="linkOption" class="text-gray-700">Upload by Link</label>
           </div>
           <div class="flex items-center mb-4">
-              <input type="radio" id="fileOption" name="imageOption" value="file" class="mr-3" onclick="toggleImageUploadOption('file')">
+              <input type="radio" id="fileOption" name="imageOption" value="file" x-model="uploadOption" class="mr-3" >
               <label for="fileOption" class="text-gray-700">Upload from File</label>
           </div>
         </div>
 
         <!-- Image Upload Fields -->
-        <div id="linkField" class="mb-4">
+        <div x-show="uploadOption === 'link'" class="transition duration-300">
             <label for="postImageLink" class="block text-lg font-semibold text-gray-700">Image URL</label>
-            <input type="text" id="postImageLink" name="postImageLink" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500">
+            <input type="text" id="postImageLink" name="postImageLink" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500"
+            x-model="imagePreview" @input="imagePreview = $event.target.value">
             <span id="postImageLinkError" class="text-red-600"></span>
         </div>
-        <div id="fileField" class="mb-4 hidden">
+        
+        <div x-show="uploadOption === 'file'" class="transition duration-300">
             <label for="postImageUpload" class="block text-lg font-semibold text-gray-700">Upload Image</label>
-            <input type="file" id="postImageUpload" name="postImageUpload" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500">
+            <input type="file" id="postImageUpload" name="postImageUpload"  accept="image/*" 
+                  @change="imagePreview = URL.createObjectURL($event.target.files[0])"
+                  class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500">
             <span id="postImageUploadError" class="text-red-600"></span>
+        </div>
+
+        <div>
+          <p class="text-sm font-medium text-gray-700 mb-2">Image Preview</p>
+          <img :src="imagePreview"  alt="Image Preview" 
+               class="w-full h-64 object-cover rounded-lg border border-gray-200">
         </div>
 
         <div class="flex justify-end space-x-3">
@@ -189,6 +212,58 @@
       </form>
     </div>
   </div>
+
+<!-- Edit Post Modal -->
+  <div id="editPostModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden modal-overlay">
+    <div class="bg-white p-8 rounded-lg shadow-lg w-full max-w-2xl">
+      <h3 class="text-2xl font-semibold text-gray-800 mb-2">Edit Post ✉️ </h3>
+      <form method="POST" enctype="multipart/form-data" id="editPostForm" class="space-y-6">
+        @csrf
+        @method('PUT')
+        <div>
+          <label for="postContentEdit" class="block text-gray-700 font-semibold mb-2">Post Content</label>
+          <textarea id="postContentEdit" name="postContentEdit"class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none transition" placeholder="Write something..." required></textarea>
+          <span id="postContentError" class="text-red-600"></span>
+        </div>
+        <!-- Image Upload Options -->
+        <div>
+          <label class="block text-lg font-semibold text-gray-700 mb-2">Select Image Upload Option</label>
+          <div class="flex items-center mb-4">
+              <input type="radio" id="linkOption" name="imageOption" value="link" class="mr-3" onclick="toggleImageUploadOptionEdit('link')" checked>
+              <label for="linkOption" class="text-gray-700">Upload by Link</label>
+          </div>
+          <div class="flex items-center mb-4">
+              <input type="radio" id="fileOption" name="imageOption" value="file" class="mr-3" onclick="toggleImageUploadOptionEdit('file')">
+              <label for="fileOption" class="text-gray-700">Upload from File</label>
+          </div>
+        </div>
+
+        <!-- Image Upload Fields -->
+        <div id="linkFieldEdit" class="mb-4">
+            <label for="postImageLink" class="block text-lg font-semibold text-gray-700">Image URL</label>
+            <input type="text" id="postImageLinkEdit" name="postImageLinkEdit" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500">
+            <span id="postImageLinkError" class="text-red-600"></span>
+        </div>
+        <div id="fileFieldEdit" class="mb-4 hidden">
+            <label for="postImageUpload" class="block text-lg font-semibold text-gray-700">Upload Image</label>
+            <input type="file" id="postImageUploadEdit" name="postImageUploadEdit" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500">
+            <span id="postImageUploadError" class="text-red-600"></span>
+        </div>
+
+        <div>
+          <p class="text-sm font-medium text-gray-700 mb-2">Image Preview</p>
+          <img id="image-preview-edit" :src=""  alt="Image Preview" 
+               class="w-full h-64 object-cover rounded-lg border border-gray-200">
+        </div>
+
+        <div class="flex justify-end space-x-3">
+          <button type="button" id="cancelEditPostButton" class="bg-gray-300 text-gray-800 px-4 py-2 rounded-lg hover:bg-gray-400 transition duration-200" onclick="closeEditPostModal()">Cancel</button>
+          <button type="submit" class="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 shadow-md transition duration-300 transform hover:scale-105">Save Changes</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
   <!-- Delete Confirmation Modal -->
   <div id="deleteConfirmationModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden modal-overlay">
     <div class="bg-white p-6 rounded-lg shadow-lg w-full max-w-sm">
@@ -364,81 +439,172 @@
     // }
 
     // Toggle options menu visibility for each ellipsis button
-    // function toggleOptionsMenu(event, button) {
-    //   event.stopPropagation();
-    //   document.querySelectorAll('.optionsMenu').forEach(menu => {
-    //     if (menu !== button.nextElementSibling) {
-    //       menu.style.display = 'none';
-    //     }
-    //   });
-    //   const optionsMenu = button.nextElementSibling;
-    //   optionsMenu.style.display = optionsMenu.style.display === 'block' ? 'none' : 'block';
-    // }
 
-    // let postToDelete = null; // Holds the ID of the post to delete
+    //MIKE - RENABLE ELLIPSIS FOR EDIT AND DELETE POST
+    function toggleOptionsMenu(event, button) {
+      event.stopPropagation();
+      document.querySelectorAll('.optionsMenu').forEach(menu => {
+        if (menu !== button.nextElementSibling) {
+          menu.style.display = 'none';
+        }
+      });
+      const optionsMenu = button.nextElementSibling;
+      optionsMenu.style.display = optionsMenu.style.display === 'block' ? 'none' : 'block';
+    }
 
-    // // Function to open the delete confirmation modal
-    // function confirmDeletePost(event, postId) {
-    //     event.stopPropagation(); // Prevent triggering other events (e.g., opening the post)
-    //     postToDelete = postId; // Set the ID of the post to delete
+    let postToDelete = null; // Holds the ID of the post to delete
 
-    //     console.log(event.target.getAttribute('data-post-id'));
+    // Function to open the delete confirmation modal
+    function confirmDeletePost(event, postId) {
+        event.stopPropagation(); // Prevent triggering other events (e.g., opening the post)
+        postToDelete = postId; // Set the ID of the post to delete
 
-    //     let deletePostRoute = "{{ route('post.destroy', ['postId' => 'POST_ID']) }}";
-    //     document.getElementById('deleteButtonModal').href = deletePostRoute.replace('POST_ID', event.target.getAttribute('data-post-id'))
+        console.log(event.target.getAttribute('data-post-id'));
 
-    //     document.getElementById('deleteConfirmationModal').classList.remove('hidden'); // Show modal
-    // }
+        let deletePostRoute = "{{ route('post.destroy', ['postId' => 'POST_ID']) }}";
+        document.getElementById('deleteButtonModal').href = deletePostRoute.replace('POST_ID', event.target.getAttribute('data-post-id'))
+
+        document.getElementById('deleteConfirmationModal').classList.remove('hidden'); // Show modal
+    }
 
     // Function to close the delete confirmation modal
-    // function closeDeleteModal() {
-    //     document.getElementById('deleteConfirmationModal').classList.add('hidden'); // Hide modal
-    //     postToDelete = null; // Clear the stored post ID
-    // }
+    function closeDeleteModal() {
+        document.getElementById('deleteConfirmationModal').classList.add('hidden'); // Hide modal
+        postToDelete = null; // Clear the stored post ID
+    }
 
     // Function to delete the post via AJAX
-    // function deletePost() {
-    //     if (!postToDelete) return; // Ensure there's a post to delete
+    function deletePost() {
+        if (!postToDelete) return; // Ensure there's a post to delete
 
-    //     // Get the delete route from the data attribute
-    //     const postElement = document.querySelector(`#artistPost[data-post-id="${postToDelete}"]`);
-    //     const url = postElement.dataset.deleteRoute; // Get the route from the data attribute
+        // Get the delete route from the data attribute
+        const postElement = document.querySelector(`#artistPost[data-post-id="${postToDelete}"]`);
+        const url = postElement.dataset.deleteRoute; // Get the route from the data attribute
 
-    //     console.log('Delete URL:', url); // Log the URL to verify it's correct
+        console.log('Delete URL:', url); // Log the URL to verify it's correct
 
-    //     // Send AJAX request
-    //     fetch(url, {
-    //         method: 'POST',
-    //         headers: {
-    //             'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
-    //             'Content-Type': 'application/json',
-    //         },
-    //     })
-    //     .then(response => {
-    //         if (!response.ok) {
-    //             throw new Error('Failed to delete the post.');
-    //         }
-    //         return response.json();
-    //     })
-    //     .then(data => {
-    //         if (data.success) {
-    //             postElement.remove(); // Remove the post from the DOM
-    //             closeDeleteModal(); // Close the modal
-    //             alert('Post deleted successfully.');
-    //         } else {
-    //             alert('Failed to delete the post.');
-    //         }
-    //     })
-    //     .catch(error => {
-    //         console.error('Error deleting post:', error);
-    //         alert('An error occurred while deleting the post.');
-    //     });
-    // }
+        // Send AJAX request
+        fetch(url, {
+            method: 'POST',
+            headers: {
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                'Content-Type': 'application/json',
+            },
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Failed to delete the post.');
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (data.success) {
+                postElement.remove(); // Remove the post from the DOM
+                closeDeleteModal(); // Close the modal
+                alert('Post deleted successfully.');
+            } else {
+                alert('Failed to delete the post.');
+            }
+        })
+        .catch(error => {
+            console.error('Error deleting post:', error);
+            alert('An error occurred while deleting the post.');
+        });
+    }
+
+    async function openEditPostModal(event, postId) {
+    const modal = document.getElementById('editPostModal');
+    if (modal) {
+        modal.classList.remove('hidden'); // Remove the 'hidden' class to show the modal
+        try {
+            // Fetch artist profile data from the server
+            const postElement = document.querySelector(`#artistPost[data-post-id="${postId}"]`);
+            const response = await fetch(`/artist/post/${postId}`);
+            if (!response.ok) throw new Error('Failed to fetch artist profile');
+
+            const data = await response.json();
+
+            console.log('Fetched post data:', data);
+
+            // Populate the modal fields with the fetched data
+            document.getElementById('postContentEdit').value = data.CONTENT || '';
+
+            // Handle the image path logic
+            const imagePath = data.POST_MEDIA_PATH || '';
+            const baseUrl = window.location.origin; // Get the base URL of the application
+            const imageSrc = imagePath.startsWith('images/post/') ? `${baseUrl}/${imagePath}` : imagePath;
+            document.getElementById('image-preview-edit').src = imageSrc;
+
+            // Set the form action dynamically
+            const form = document.getElementById('editPostForm'); // Assuming your form has this ID
+            form.action = `/artist/post/update/${postId}`; // Construct the URL
+
+            // Add event listeners for file input and URL input
+            const fileInput = document.getElementById('postImageUploadEdit'); // File input
+            const urlInput = document.getElementById('postImageLinkEdit'); // URL input
+            const imagePreview = document.getElementById('image-preview-edit');
+
+            // Function to update the image preview
+            const updateImagePreview = (src) => {
+                imagePreview.src = src;
+            };
+
+            // Handle file input change
+            fileInput.addEventListener('change', function (event) {
+                const file = event.target.files[0]; // Get the selected file
+                if (file) {
+                    const reader = new FileReader(); // Create a FileReader instance
+
+                    reader.onload = function (e) {
+                        // Update the image preview with the new file's data URL
+                        updateImagePreview(e.target.result);
+                    };
+
+                    reader.readAsDataURL(file); // Read the file as a data URL
+                }
+            });
+
+            // Handle URL input change
+            urlInput.addEventListener('input', function (event) {
+                const url = event.target.value.trim(); // Get the URL
+                if (url) {
+                    // Update the image preview with the provided URL
+                    updateImagePreview(url);
+                } else {
+                    // If the URL is empty, revert to the default image or clear the preview
+                    updateImagePreview(imageSrc || ''); // Use the original image or an empty string
+                }
+            });
+
+        } catch (error) {
+            console.error('Error fetching post data:', error);
+            alert('Could not load post data. Please try again.');
+            modal.style.display = 'none'; // Hide modal if fetching data fails
+        }
+    }
+}
+
+    function closeEditPostModal() {
+        const modal = document.getElementById('editPostModal');
+        document.getElementById('postImageUploadEdit').value = ''; // File input
+        document.getElementById('postImageLinkEdit').value = ''; // URL input
+        const imagePreview = document.getElementById('image-preview-edit');
+        imagePreview.src = '';
+        if (modal) {
+            modal.classList.add('hidden'); // Add the 'hidden' class to hide the modal
+        }
+    }
+
+    function toggleImageUploadOptionEdit(option) {
+        document.getElementById('linkFieldEdit').classList.toggle('hidden', option !== 'link');
+        document.getElementById('fileFieldEdit').classList.toggle('hidden', option !== 'file');
+    }
+    //END
 
     // Hide options menu when clicking outside
-    // document.addEventListener('click', () => {
-    //   document.querySelectorAll('.optionsMenu').forEach(menu => menu.style.display = 'none');
-    // });
+    document.addEventListener('click', () => {
+      document.querySelectorAll('.optionsMenu').forEach(menu => menu.style.display = 'none');
+    });
 
     // Show and hide the Add Post modal
     document.getElementById('addPostButton').addEventListener('click', () => {

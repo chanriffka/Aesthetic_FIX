@@ -59,22 +59,29 @@
                 <p class="mt-6 text-lg">
                     Join Aesthetic, the premier platform for artists in Indonesia. Share your art, connect with buyers, and grow your career today!
                 </p>
-                @if(Auth::user()->Artist == null)
-                <button onclick="openJoinModal()" class="mt-8 px-8 py-3 bg-secondary text-primary font-semibold rounded-lg shadow-lg hover:bg-primary hover:text-white transition">
-                    Join as an Artist
-                </button>
-                @else
-                <p class="mt-6 text-lg">
-                    <button class="mt-8 px-8 py-3 bg-secondary text-primary font-semibold rounded-lg shadow-lg hover:bg-secondary hover:text-primary transition">
-                        @if(Auth::user()->Artist->isActive())
-                            You are already being Artist
-                        @else
-                            Admin is reviewing, check on your email for all update
-                        @endif
+                @if(Auth::check())
+                    @if(Auth::user()->Artist == null)
+                    <button onclick="openJoinModal()" class="mt-8 px-8 py-3 bg-secondary text-primary font-semibold rounded-lg shadow-lg hover:bg-primary hover:text-white transition">
+                        Join as an Artist
                     </button>
-                </p>
+                    @else
+                    <p class="mt-6 text-lg">
+                        <button class="mt-8 px-8 py-3 bg-secondary text-primary font-semibold rounded-lg shadow-lg hover:bg-secondary hover:text-primary transition">
+                            @if(Auth::user()->Artist->isActive())
+                                You are already being Artist
+                            @else
+                                Admin is reviewing, check on your email for all update
+                            @endif
+                        </button>
+                    </p>
+                    @endif
+                @else
+                <a href="{{ url('login') }}">
+                    <button class="mt-8 px-8 py-3 bg-secondary text-primary font-semibold rounded-lg shadow-lg hover:bg-primary hover:text-white transition">
+                        Join as an Artist
+                    </button>
+                </a>
                 @endif
-                
             </div>
             <div class="w-full lg:w-1/2">
                 <img src="https://plus.unsplash.com/premium_photo-1704835116060-d88d18bd4727?q=80&w=2910&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" alt="Artistic Hero" class="rounded-lg shadow-lg">
@@ -168,6 +175,7 @@
         </div>
     </footer>
     <!-- Join Artist Modal -->
+    @if(Auth::check())
     <div id="joinArtistModal" class="modal fixed inset-0 bg-black bg-opacity-50 items-center justify-center z-50">
         <div class="bg-white rounded-lg shadow-lg max-w-4xl w-full p-8 fade-in overflow-y-auto max-h-[80vh]">
             <div class="flex justify-between items-center">
@@ -231,6 +239,9 @@
                     <select id="headline" name="role"
                         class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-600"
                     required>
+                        {{-- Ubah ketika join yang pertama di select "select one" --}}
+                        <option value="Select One..." selected>Select One</option>
+                        {{-- End --}}
                          @foreach($skillsMaster as $skill)
                             <option value="{{ $skill->DESCR }}">{{ $skill->DESCR }}</option>
                         @endforeach
@@ -242,7 +253,7 @@
                 </div>
                 <div class="flex justify-between items-center mt-6">
                     <label class="block text-gray-700 font-medium">
-                        <input type="checkbox" id="terms" class="mr-2">
+                        <input type="checkbox" id="terms" class="mr-2" required>
                         I agree to the <span onclick="openTermsModal()" class="text-primary underline cursor-pointer">Terms and Conditions</span>.
                     </label>
                     <button type="submit"class="bg-primary text-white px-6 py-3 rounded-lg shadow-lg hover:bg-indigo-700 transition">
@@ -252,6 +263,7 @@
             </form>
         </div>
     </div>
+    @endif
 
     <!-- Terms and Thank You Modals -->
     <div id="termsModal" class="modal fixed inset-0 bg-black bg-opacity-50 items-center justify-center z-50">

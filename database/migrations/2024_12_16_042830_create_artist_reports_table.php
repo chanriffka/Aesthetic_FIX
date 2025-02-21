@@ -16,7 +16,7 @@ return new class extends Migration
             $table->unsignedBigInteger('ARTIST_ID');
             $table->foreign('ARTIST_ID')->references('ARTIST_ID')->on('ARTIST')->onUpdate('cascade')->onDelete('cascade');
             $table->unsignedBigInteger('USER_ID');
-            $table->foreign('USER_ID')->references('USER_ID')->on('MASTER_USER')->onUpdate('cascade')->onDelete('cascade');
+            $table->foreign('USER_ID')->references('USER_ID')->on('MASTER_USER')->onUpdate('no action')->onDelete('no action');
             $table->longText('CONTENT');
             $table->tinyInteger('STATUS')->default(0);
             $table->timestamps();

@@ -60,6 +60,9 @@
     </style>
 </head>
 <body class="bg-gray-100 text-gray-800">
+    @if($errors->any())
+    {{ implode('', $errors->all('<div>:message</div>')) }}
+@endif
 
 <div class="container mx-auto p-6">
     <div class="flex items-center justify-between mb-6">
@@ -189,44 +192,21 @@
         <div>
             <label for="artworkPrice" class="block text-sm font-semibold text-gray-700 mb-1">Price</label>
             <input type="number" name="artworkPrice" id="artworkPrice" placeholder="Enter Price" 
-                class="w-full px-4 py-2 border rounded-lg focus:ring-indigo-500 focus:border-indigo-500" required>
+                class="w-full px-4 py-2 border rounded-lg focus:ring-indigo-500 focus:border-indigo-500" min="100" max="2147483647"required>
         </div>
 
             <!-- Image Upload Section -->
-            <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">Image Upload Option</label>
-                <div class="flex items-center gap-4 mb-4">
-                    <label class="flex items-center">
-                        <input type="radio" name="imageOption" value="link" x-model="uploadOption" class="mr-2">
-                        <span>Image URL</span>
-                    </label>
-                    <label class="flex items-center">
-                        <input type="radio" name="imageOption" value="file" x-model="uploadOption" class="mr-2">
-                        <span>Upload New File</span>
-                    </label>
-                </div>
+            <div>   
 
-                <!-- Image URL Field -->
-                <div x-show="uploadOption === 'link'" class="transition">
-                    <label for="imageLink" class="block text-sm font-medium text-gray-700 mb-1">Image URL</label>
-                    <input type="text" name="artworkImageLink" id="imageLink" placeholder="Enter Image URL" 
-                           class="w-full px-4 py-2 border rounded-lg focus:ring-indigo-500 focus:border-indigo-500" x-model="imagePreview" 
-                           @input="imagePreview = $event.target.value" required>
-                </div>
-
-                <!-- File Upload Field -->
-                <div x-show="uploadOption === 'file'" class="transition">
-                    <label for="imageFile" class="block text-sm font-medium text-gray-700 mb-1">Upload Image</label>
-                    <input type="file" name="artworkImageUpload" id="imageFile" accept="image/*" 
-                           @change="imagePreview = URL.createObjectURL($event.target.files[0])" 
+                <div class="transition gap-4 mb-4">
+                    <label for="imageFile" class="block text-sm font-medium text-gray-700 mb-1">Upload Images</label>
+                    <input type="file" name="artworkImageUpload[]" id="imageFile" accept="image/*" multiple
                            class="w-full px-4 py-2 border rounded-lg focus:ring-indigo-500 focus:border-indigo-500">
                 </div>
-
-                <!-- Image Preview -->
-                <div>
-                    <p class="text-sm font-medium text-gray-700 mb-2">Image Preview</p>
-                    <img :src="imagePreview" alt="Image Preview" 
-                         class="w-full h-64 object-cover rounded-lg border border-gray-200">
+        
+                <!-- Image Previews -->
+                <div id="imagePreviews" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 mt-4">
+                    <!-- Image previews will be dynamically inserted here -->
                 </div>
             </div>
 
@@ -257,6 +237,57 @@
 @endif
 
 <script>
+
+    document.getElementById('imageFile').addEventListener('change', function(event) {
+        const files = event.target.files;
+        const previewContainer = document.getElementById('imagePreviews');
+        previewContainer.innerHTML = ''; // Clear previous previews
+
+        const maxFiles = 5; // Set the maximum number of files allowed
+        const maxFileSize = 10 * 1024 * 1024; // 2MB in bytes
+
+        if (files.length > maxFiles) {
+            alert(`You can only upload up to ${maxFiles} images.`);
+            event.target.value = ''; // Clear the selected files
+            return;
+        }
+
+        for (let i = 0; i < files.length; i++) {
+            const file = files[i];
+
+            if (file.size > maxFileSize) {
+                alert(`File "${file.name}" exceeds the maximum file size of 2MB.`);
+                event.target.value = ''; // Clear the selected files
+                return;
+            }
+
+            const reader = new FileReader();
+
+            reader.onload = function(e) {
+                const previewDiv = document.createElement('div');
+                previewDiv.className = 'relative';
+
+                const img = document.createElement('img');
+                img.src = e.target.result;
+                img.alt = 'Image Preview';
+                img.className = 'w-full h-64 object-cover rounded-lg border border-gray-200';
+
+                const removeButton = document.createElement('button');
+                removeButton.innerHTML = '&times;';
+                removeButton.className = 'absolute top-2 right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600';
+                removeButton.onclick = function() {
+                    previewDiv.remove(); // Remove the preview when the button is clicked
+                };
+
+                previewDiv.appendChild(img);
+                previewDiv.appendChild(removeButton);
+                previewContainer.appendChild(previewDiv);
+            };
+
+            reader.readAsDataURL(file); // Convert file to data URL
+        }
+    });
+
     function openModal() {
         document.getElementById('addArtworkModal').classList.remove('hidden');
     }

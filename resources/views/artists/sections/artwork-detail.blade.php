@@ -134,13 +134,42 @@
         </div>
         @endforeach
 
-        <!-- Clickable Artwork Image -->
+        {{-- <!-- Clickable Artwork Image -->
         <div class="flex justify-center items-center max-w-screen-lg p-4">
             <img id="artworkImage" 
                  src="{{ Str::startsWith($artwork->ArtImages()->first()->IMAGE_PATH, 'images/art/') ? asset($artwork->ArtImages()->first()->IMAGE_PATH) : $artwork->ArtImages()->first()->IMAGE_PATH }}" 
                  alt="{{ $artwork->ARTWORK_TITLE }}" 
                  class="max-h-[85vh] w-auto object-contain rounded-lg transition-transform duration-300 transform hover:scale-105 cursor-pointer" />
+        </div> --}}
+
+        <!-- Clickable Artwork Image with Navigation -->
+        <div class="relative flex flex-col items-center max-w-screen-lg p-4">
+            <!-- Left Navigation Button -->
+            <button id="prevButton" 
+                class="absolute left-[-25px] top-1/2 transform -translate-y-1/2 bg-gray-800 text-white px-3 py-2 rounded-full shadow-md hover:bg-gray-700 z-10">
+                &#10094;
+            </button>
+
+            <!-- Artwork Image -->
+            <img id="artworkImage" 
+                src="{{ Str::startsWith($artwork->ArtImages()->first()->IMAGE_PATH, 'images/art/') ? asset($artwork->ArtImages()->first()->IMAGE_PATH) : $artwork->ArtImages()->first()->IMAGE_PATH }}" 
+                alt="{{ $artwork->ARTWORK_TITLE }}" 
+                class="max-h-[85vh] w-auto object-contain rounded-lg transition-transform duration-300 transform hover:scale-105 cursor-pointer" />
+
+            <!-- Right Navigation Button -->
+            <button id="nextButton" 
+                class="absolute right-[-25px] top-1/2 transform -translate-y-1/2 bg-gray-800 text-white px-3 py-2 rounded-full shadow-md hover:bg-gray-700">
+                &#10095;
+            </button>
+
+            <!-- Dots Indicator -->
+            <div id="dotsContainer" class="flex space-x-2 mt-4">
+                @foreach ($artwork->ArtImages()->get() as $index => $image)
+                    <div class="dot w-3 h-3 rounded-full bg-gray-400 cursor-pointer" data-index="{{ $index }}"></div>
+                @endforeach
+            </div>
         </div>
+
 
 
     <!-- Artwork Info Section (Redesigned) -->
@@ -176,8 +205,13 @@
                 <!-- Actions -->
                 <div class="flex space-x-4 mt-6">
                     @if(Auth::check())
-                        @if (Auth::user()->USER_ID == $artwork->USER_ID )
-                            <button id="editArtworkButton" onclick="openEditModal()" class="bg-indigo-500 text-white py-2 px-4 rounded-lg hover:bg-indigo-600 transition btn">
+                        @if (Auth::user()->USER_ID == $artwork->USER_ID && $artwork->IS_VERIF == 0)
+                            <button id="editArtworkButton" onclick="openEditModal({{ json_encode($artwork->ArtImages()->get()) }})" class="bg-indigo-500 text-white py-2 px-4 rounded-lg hover:bg-indigo-600" disabled>
+                                <i class="fas fa-clock"></i>
+                                <span>Artwork is in Review by Admin</span>
+                            </button>
+                        @elseif (Auth::user()->USER_ID == $artwork->USER_ID )
+                            <button id="editArtworkButton" onclick="openEditModal({{ json_encode($artwork->ArtImages()->get()) }})" class="bg-indigo-500 text-white py-2 px-4 rounded-lg hover:bg-indigo-600 transition btn">
                                 <i class="fas fa-pen"></i>
                                 <span>EDIT</span>
                             </button>
@@ -186,18 +220,19 @@
                                 <span>DELETE</span>
                             </a>
                         @else
-                            <a href="https://wa.me/{{ preg_replace('/^0/', '62', $artwork->MasterUser->Buyer->PHONE_NUMBER) }}" class="border border-indigo-500 text-indigo-500 py-2 px-4 rounded-lg hover:bg-indigo-50 transition btn">
-                                CONTACT ARTIST
-                            </a>
+                            @if($artwork->isInStock())
                             <a href="{{ route('cart.add', ['id'=>$artwork->ART_ID]) }}" class="border border-indigo-500 text-indigo-500 py-2 px-4 rounded-lg hover:bg-indigo-50 transition btn">
                                 <i class="fas fa-shopping-cart"></i>
                                 <span>Add to Cart</span>
                             </a>
+                            @else
+                            <a href="#" class="border border-gray-500 text-gray-500 py-2 px-4 rounded-lg hover:bg-gray-50" @disabled(true)>
+                                <i class="fas fa-times-circle"></i>
+                                <span>Sold Out</span>
+                            </a>
+                            @endif
                         @endif
                     @else
-                    <a href="https://wa.me/{{ preg_replace('/^0/', '62', $artwork->MasterUser->Buyer->PHONE_NUMBER) }}" class="border border-indigo-500 text-indigo-500 py-2 px-4 rounded-lg hover:bg-indigo-50 transition btn">
-                        CONTACT ARTIST
-                    </a>
                         <button class="border border-indigo-500 text-indigo-500 py-2 px-4 rounded-lg hover:bg-indigo-50 transition btn">
                             <i class="fas fa-shopping-cart"></i>
                             <span>Add to Cart</span>
@@ -267,6 +302,7 @@
             </div>
         </div>
 <!-- Other Listings Section -->
+@if($moreArtWorks->count() > 0)
 <div class="max-w-7xl mx-auto py-12 mt-12">
     <div class="text-center mb-8">
         <img alt="Profile picture of Ruslana Levandovska" class="rounded-full mx-auto mb-4 w-16 h-16 object-cover"
@@ -293,28 +329,18 @@
                     @endif
                 </p>
                 <p class="text-gray-500 text-sm">
-                    @foreach($otherArtwork->ArtCategories as $category)
-                        {{ $otherArtwork->ArtCategories->map(fn($category) => $category->ArtCategoryMaster->DESCR)->implode(' | ') }}
-                    @endforeach
+                    {{ $otherArtwork->ArtCategories->map(fn($category) => $category->ArtCategoryMaster->DESCR)->implode(' | ') }}
                 </p>
             </div>
         </a>
         @endforeach
 </div>
-<!-- View More Button -->
-<div class="flex justify-center mt-8">
-    <a href="#"
-       class="inline-flex items-center px-6 py-2 bg-indigo-600 text-white rounded-full hover:bg-indigo-700 transition">
-        View More <span class="ml-2">→</span>
-    </a>
-</div>
+@endif
+
 <!-- Edit Artwork Modal -->
 <div id="editArtworkModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50">
     <div class="bg-white p-8 rounded-lg shadow-2xl w-full max-w-5xl h-[90vh] overflow-y-auto" 
-         x-data="{ 
-            uploadOption: '{{ Str::startsWith($artwork->ArtImages()->first()->IMAGE_PATH, "images/art/") ? "file" : "link" }}', 
-            imagePreview: '{{ Str::startsWith($artwork->ArtImages()->first()->IMAGE_PATH, "images/art/") ? asset($artwork->ArtImages()->first()->IMAGE_PATH) : $artwork->ArtImages()->first()->IMAGE_PATH }}' 
-         }">
+         x-data="editArtworkModal" x-ref="editModal" x-init="console.log('Alpine Modal Initialized!', $data)">
 
         <!-- Modal Header -->
         <div class="flex justify-between items-center border-b pb-4 mb-6">
@@ -403,48 +429,56 @@
             <div>
                 <label for="artworkPriceEdit" class="block text-sm font-medium text-gray-700 mb-1">Price</label>
                 <input type="number" name="price" id="artworkPriceEdit" value="{{ $artwork->PRICE }}" 
-                       class="w-full px-4 py-2 border rounded-lg focus:ring-indigo-500 focus:border-indigo-500" required>
+                       class="w-full px-4 py-2 border rounded-lg focus:ring-indigo-500 focus:border-indigo-500" min="100" max="2147483647" required>
             </div>
 
             <!-- Image Upload Section -->
             <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">Image Upload Option</label>
-                <div class="flex items-center gap-4 mb-4">
-                    <label class="flex items-center">
-                        <input type="radio" name="imageOption" value="link" x-model="uploadOption" class="mr-2">
-                        <span>Image URL</span>
-                    </label>
-                    <label class="flex items-center">
-                        <input type="radio" name="imageOption" value="file" x-model="uploadOption" class="mr-2">
-                        <span>Upload New File</span>
-                    </label>
-                </div>
-
-                <div x-show="uploadOption === 'link'" class="transition">
-                    <label for="imageLinkEdit" class="block text-sm font-medium text-gray-700 mb-1">Image URL</label>
-                    <input type="text" name="imageLink" id="imageLinkEdit" value="{{ $artwork->IMAGE_URL }}"
-                           class="w-full px-4 py-2 border rounded-lg focus:ring-indigo-500 focus:border-indigo-500"
-                            @input="imagePreview = $event.target.value">
-                </div>
-
-                <div x-show="uploadOption === 'file'" class="transition">
+                <div class="transition mb-4">
                     <label for="imageFileEdit" class="block text-sm font-medium text-gray-700 mb-1">Upload Image</label>
-                    <input type="file" name="imageFile" id="imageFileEdit" accept="image/*"
-                           @change="imagePreview = URL.createObjectURL($event.target.files[0])"
+                    <input type="file" name="imageFile[]" id="imageFileEdit" accept="image/*" multiple
+                           @change="handleImageUpload($event)"
                            class="w-full px-4 py-2 border rounded-lg focus:ring-indigo-500 focus:border-indigo-500">
                 </div>
-
-                <!-- Image Preview -->
+    
+                <!-- Image Previews -->
                 <div>
-                    <p class="text-sm font-medium text-gray-700 mb-2">Image Preview</p>
-                    <img :src="imagePreview" alt="Image Preview" 
-                         class="w-full h-64 object-cover rounded-lg border border-gray-200">
+                    <p class="text-sm font-medium text-gray-700 mb-2">Image Previews</p>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                        <!-- Existing Images -->
+                        <template x-for="(image, index) in existingImages" :key="index">
+                            <div class="relative">
+                                <img :src="image.IMAGE_PATH.startsWith('images/art/') ? '{{ asset('') }}' + image.IMAGE_PATH : image.IMAGE_PATH" 
+                                    alt="Existing Image" 
+                                    class="w-full h-64 object-cover rounded-lg border border-gray-200">
+                                <button type="button" @click.prevent="removeExistingImage(index)" 
+                                        class="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600">
+                                    &times;
+                                </button>
+                            </div>
+                        </template>
+                        
+                        <!-- New Image Previews -->
+                        <template x-for="(preview, index) in newImagePreviews" :key="'new-' + index">
+                            <div class="relative">
+                                <img :src="preview" alt="New Image Preview" 
+                                    class="w-full h-64 object-cover rounded-lg border border-gray-200">
+                                <button type="button" @click.prevent="removeNewImage(index)" 
+                                        class="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600">
+                                    &times;
+                                </button>
+                            </div>
+                        </template>
+                    </div>
                 </div>
+
+                <!-- Hidden Input for Removed Existing Images -->
+                <input type="hidden" name="removed_existing_images" :value="JSON.stringify(removedExistingImages)">
             </div>
 
             <!-- Buttons -->
             <div class="flex justify-end space-x-4 border-t pt-4">
-                <button type="button" onclick="closeEditModal()" 
+                <button type="button" @click="closeEditModal()" 
                         class="px-4 py-2 text-gray-700 bg-gray-200 rounded-lg hover:bg-gray-300 transition">Cancel</button>
                 <button type="submit" 
                         class="px-4 py-2 text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 transition">Save Changes</button>
@@ -464,7 +498,232 @@
 
     <script>
 // Get elements
-const artworkImage = document.getElementById('artworkImage');
+    document.addEventListener("DOMContentLoaded", function () {
+        // Get the images from Laravel
+        const images = @json($artwork->ArtImages()->pluck('IMAGE_PATH')->toArray());
+
+        let currentIndex = 0;
+        const artworkImage = document.getElementById("artworkImage");
+        const prevButton = document.getElementById("prevButton");
+        const nextButton = document.getElementById("nextButton");
+        const dots = document.querySelectorAll(".dot");
+
+        function updateImage() {
+            let imagePath = images[currentIndex];
+            artworkImage.src = imagePath.startsWith('images/art/') ? "{{ asset('') }}" + imagePath : imagePath;
+
+            // Update active dot
+            dots.forEach((dot, index) => {
+                dot.classList.toggle("bg-gray-800", index === currentIndex);
+                dot.classList.toggle("bg-gray-400", index !== currentIndex);
+            });
+        }
+
+        prevButton.addEventListener("click", function () {
+            currentIndex = (currentIndex === 0) ? images.length - 1 : currentIndex - 1;
+            updateImage();
+        });
+
+        nextButton.addEventListener("click", function () {
+            currentIndex = (currentIndex === images.length - 1) ? 0 : currentIndex + 1;
+            updateImage();
+        });
+
+        // Allow clicking on dots to jump to an image
+        dots.forEach(dot => {
+            dot.addEventListener("click", function () {
+                currentIndex = parseInt(this.dataset.index);
+                updateImage();
+            });
+        });
+
+        // Initialize first active dot
+        updateImage();
+    });
+
+    document.addEventListener('alpine:init', () => {
+        Alpine.data('editArtworkModal', () => ({
+            isModalOpen: false,
+            existingImages: [], // Existing images passed from the server
+            removedExistingImages: [], // Track removed existing images
+            newImagePreviews: [], // Previews of newly uploaded images
+            newImages: [], // Newly uploaded image files
+
+            // Handle image upload
+            handleImageUpload(event) {
+                const files = event.target.files;
+                for (let i = 0; i < files.length; i++) {
+                    const file = files[i];
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        this.newImagePreviews.push(e.target.result); // Add preview URL
+                        this.newImages.push(file); // Add file to the newImages array
+                    };
+                    reader.readAsDataURL(file); // Convert file to data URL
+                }
+            },
+
+            // Remove an existing image
+            removeExistingImage(index) {
+                const removedImage = this.existingImages.splice(index, 1)[0]; // Remove image from the existingImages array
+                this.removedExistingImages.push(removedImage); // Add to removedExistingImages array
+            },
+
+            // Remove a new image preview
+            removeNewImage(index) {
+                this.newImagePreviews.splice(index, 1); // Remove preview from the newImagePreviews array
+                this.newImages.splice(index, 1); // Remove file from the newImages array
+            },
+        }));
+    });
+
+    // Function to open the modal and pass existing images
+    function openEditModal(existingImages) {
+        console.log("Opening modal with images:", existingImages);
+        document.getElementById('editArtworkModal').classList.remove('hidden');
+
+        Alpine.nextTick(() => {
+            const modalComponent = Alpine.$data(document.querySelector('[x-data="editArtworkModal"]'));
+
+            if (!modalComponent) {
+                console.error("Alpine.js component is not found.");
+                return;
+            }
+
+            // Update Alpine data safely
+            modalComponent.existingImages = existingImages;
+            modalComponent.removedExistingImages = []; // Reset removed images
+            modalComponent.isModalOpen = true;
+        });
+    }
+
+    // Function to close the modal
+    function closeEditModal() {
+        const modal = document.getElementById('editArtworkModal');
+
+        if (!modal) {
+            console.error("Modal element not found.");
+            return;
+        }
+
+        modal.classList.add('hidden'); // Hide the modal
+
+        // Ensure Alpine.js is initialized before modifying data
+        Alpine.nextTick(() => {
+            const modalComponent = Alpine.$data(document.querySelector('[x-data="editArtworkModal"]'));
+            
+            if (modalComponent && modalComponent.newImages !== undefined && modalComponent.newImagePreviews !== undefined) {
+                // Clear newly added images
+                modalComponent.newImages = [];
+                modalComponent.newImagePreviews = [];
+                modalComponent.removedExistingImages = []; // Reset removed images
+            } else {
+                console.error("Alpine.js modal data is not available yet.");
+            }
+            console.log("removing images:", modalComponent.removedExistingImages);
+        });
+    }
+
+
+    // document.addEventListener('alpine:init', () => {
+    //     Alpine.data('editArtworkModal', () => ({
+    //         isModalOpen: false,
+    //         existingImages: [], // Existing images passed from the server
+    //         newImagePreviews: [], // Previews of newly uploaded images
+    //         newImages: [], // Newly uploaded image files
+
+    //         // Handle image upload
+    //         handleImageUpload(event) {
+    //             const files = event.target.files;
+    //             for (let i = 0; i < files.length; i++) {
+    //                 const file = files[i];
+    //                 const reader = new FileReader();
+    //                 reader.onload = (e) => {
+    //                     this.newImagePreviews.push(e.target.result); // Add preview URL
+    //                     this.newImages.push(file); // Add file to the newImages array
+    //                 };
+    //                 reader.readAsDataURL(file); // Convert file to data URL
+    //             }
+    //         },
+
+    //         // Remove an existing image
+    //         removeExistingImage(index) {
+    //             this.existingImages.splice(index, 1); // Remove image from the existingImages array
+    //         },
+
+    //         // Remove a new image preview
+    //         removeNewImage(index) {
+    //             this.newImagePreviews.splice(index, 1); // Remove preview from the newImagePreviews array
+    //             this.newImages.splice(index, 1); // Remove file from the newImages array
+    //         },
+    //     }));
+    // });
+
+    // Function to open the modal and pass existing images
+    // function openEditModal(existingImages) {
+    //     console.log("Opening modal with images:", existingImages);
+    //     document.getElementById('editArtworkModal').classList.remove('hidden');
+
+    //     Alpine.nextTick(() => {
+    //         const modalComponent = Alpine.$data(document.querySelector('[x-data="editArtworkModal"]'));
+
+    //         if (!modalComponent) {
+    //             console.error("Alpine.js component is not found.");
+    //             return;
+    //         }
+
+    //         // Update Alpine data safely
+    //         modalComponent.existingImages = existingImages;
+    //         modalComponent.isModalOpen = true;
+    //     });
+    // }
+
+    // function openEditModal(existingImages) {
+    //     console.log("Opening modal with images:", existingImages);
+    //     document.getElementById('editArtworkModal').classList.remove('hidden');
+
+    //     Alpine.nextTick(() => {
+    //         const modalComponent = Alpine.$data(document.querySelector('[x-data="editArtworkModal"]'));
+
+    //         if (!modalComponent) {
+    //             console.error("Alpine.js component is not found.");
+    //             return;
+    //         }
+
+    //         // Update Alpine.js data safely
+    //         modalComponent.existingImages = existingImages;
+    //         modalComponent.removedImageIds = []; // Reset removed images
+    //         modalComponent.newImages = []; // Reset new uploads
+    //         modalComponent.newImagePreviews = []; // Reset new image previews
+    //         modalComponent.isModalOpen = true;
+    //     });
+    // }
+
+    // function closeEditModal() {
+    //     const modal = document.getElementById('editArtworkModal');
+
+    //     if (!modal) {
+    //         console.error("Modal element not found.");
+    //         return;
+    //     }
+
+    //     modal.classList.add('hidden'); // Hide the modal
+
+    //     // Ensure Alpine.js is initialized before modifying data
+    //     Alpine.nextTick(() => {
+    //         const modalComponent = Alpine.$data(document.querySelector('[x-data="editArtworkModal"]'));
+            
+    //         if (modalComponent && modalComponent.newImages !== undefined && modalComponent.newImagePreviews !== undefined) {
+    //             // Clear newly added images
+    //             modalComponent.newImages = [];
+    //             modalComponent.newImagePreviews = [];
+    //         } else {
+    //             console.error("Alpine.js modal data is not available yet.");
+    //         }
+    //     });
+    // }
+
+    const artworkImage = document.getElementById('artworkImage');
     const imageModal = document.getElementById('imageModal');
     const modalImage = document.getElementById('modalImage');
     const closeModal = document.getElementById('closeModal');
@@ -476,17 +735,6 @@ const artworkImage = document.getElementById('artworkImage');
     let isDragging = false;
     let startX, startY, translateX = 0, translateY = 0;
 
-    // Open modal
-    artworkImage.addEventListener('click', () => {
-        modalImage.src = artworkImage.src;
-        imageModal.classList.add('active');
-    });
-
-    // Close modal
-    closeModal.addEventListener('click', () => {
-        imageModal.classList.remove('active');
-        resetImage(); // Reset zoom and pan
-    });
 
     // Zoom in
     zoomIn.addEventListener('click', () => {
@@ -537,13 +785,11 @@ const artworkImage = document.getElementById('artworkImage');
     function applyTransform() {
         modalImage.style.transform = `translate(${translateX}px, ${translateY}px) scale(${zoomScale})`;
     }
-    function openEditModal() {
-        document.getElementById('editArtworkModal').classList.remove('hidden');
-    }
 
-    function closeEditModal() {
-        document.getElementById('editArtworkModal').classList.add('hidden');
-    }
+    
+
+    
+
     // Character Count Logic
     function updateCharCount(textarea) {
         const currentLength = textarea.value.length;

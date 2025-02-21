@@ -36,15 +36,17 @@
         <div class="relative z-10 text-center">
             <h1 class="text-5xl md:text-6xl font-bold text-indigo-700 mb-4 fade-in">About Aesthetic</h1>
             <p class="text-xl text-gray-600 max-w-xl mx-auto fade-in">Empowering Indonesia's Art Community and Inspiring Creativity</p>
+            <a href="#AboutAesthetic">
             <button class="bg-indigo-600 hover:bg-indigo-700 text-white px-8 py-3 mt-8 rounded-full font-semibold transition duration-300 fade-in">What is Aesthetic? </button>
+            </a>
         </div>
     </header>
 
     <!-- Main Content Section -->
-    <main class="container mx-auto px-6 md:px-12 py-16">
+    <main id="AboutAesthetic"  class="container mx-auto px-6 md:px-12 py-16">
 
         <!-- What is Aesthetic Section -->
-        <section class="text-center mb-20 fade-in">
+        <section  class="text-center mb-20 fade-in">
             <h2 class="text-4xl font-semibold text-indigo-700 mb-8">What is Aesthetic?</h2>
             <div class="flex flex-col md:flex-row items-center gap-8">
                 <div class="w-full md:w-1/2 hover:shadow-lg transition-shadow duration-300 rounded-lg overflow-hidden">
@@ -120,7 +122,9 @@
         <section class="bg-indigo-600 text-white rounded-lg py-12 px-6 text-center mb-20 hover:shadow-2xl transition-shadow duration-300 fade-in">
             <h2 class="text-4xl font-semibold mb-6">Join Us on This Journey</h2>
             <p class="text-lg max-w-3xl mx-auto mb-8">Whether you’re an artist or a collector, Aesthetic is here to support your journey. Join our community and help us make the world a more creative and inspiring place.</p>
+            <a href="{{ url('landing') }}">
             <button class="bg-white text-indigo-600 hover:text-indigo-700 font-semibold px-8 py-3 rounded-full transition duration-300">Get Started</button>
+            </a>
         </section>
     </main>
     

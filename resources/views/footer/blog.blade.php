@@ -23,20 +23,13 @@
               <h3 class="text-xl font-semibold text-gray-800 mb-2">{{ $blogItem->TITLE }}</h3>
               <p class="text-gray-600 mb-4">{{ \Illuminate\Support\Str::limit($blogItem->CONTENT, 64) }}</p>
               <div class="flex justify-between items-center">
-                <a href="{{ route('blog.preview',['slug'=>$blogItem->SLUG]) }}" class="text-indigo-600 hover:text-indigo-700 font-medium">Read More &rarr;</a>
+                <a href="{{ route('blog.detail',['slug'=>$blogItem->SLUG]) }}" class="text-indigo-600 hover:text-indigo-700 font-medium">Read More &rarr;</a>
                 <span class="text-gray-400 text-sm">{{ (new \DateTime($blogItem->created_at))->format('M d, Y') }}</span>
               </div>
             </div>
           </div>
         @endforeach
       </div>
-      <!-- Load More Button -->
-      <div class="text-center mt-10">
-        <button id="loadMoreButton" class="px-8 py-3 bg-indigo-600 text-white rounded-full hover:bg-indigo-700 transition">
-          Load More
-        </button>
-      </div>
-    </div>
     <footer class="bg-indigo-600 border-t border-slate-50 mt-10">
         <div class="container mx-auto py-8 px-6 lg:px-8 text-center">
           

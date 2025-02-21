@@ -53,7 +53,7 @@
                   <p class="text-lg md:text-xl mb-6 max-w-2xl">
                       Embark on an Artistic Odyssey: Navigate the Expressive Universes Crafted by Our Featured Designers
                   </p>
-                  <a href="#" class="bg-green-500 text-white px-6 py-3 rounded-full hover:bg-green-600">Explore</a>
+                  <a href="{{ url('explore') }}" class="bg-green-500 text-white px-6 py-3 rounded-full hover:bg-green-600">Explore</a>
               </div>
               
             <!-- Left Arrow -->
@@ -87,7 +87,7 @@
                 <p class="text-gray-600 mb-6">
                     We provide a variety of <span class="font-bold">professional services</span> including Contemporary Art, 3D Art Design, and Custom Art Commissions.
                 </p>
-                <a href="{{ url('login') }}" class="bg-indigo-600 text-white px-6 py-3 rounded-full hover:bg-indigo-700">See All Services</a>
+                <a href="{{ url('artists') }}" class="bg-indigo-600 text-white px-6 py-3 rounded-full hover:bg-indigo-700">Look for Artist</a>
             </div>
         </div>
     </section>
@@ -170,7 +170,7 @@
                 <div class="absolute inset-0 flex flex-col justify-center items-start text-white p-8 bg-black bg-opacity-50 rounded-lg">
                     <h2 class="text-3xl md:text-4xl lg:text-5xl font-bold mb-4">Dive Into The Exquisite Realm of Imagination and Discover The Boundless Beauty of Creativity In Our Art Gallery</h2>
                     <p class="text-lg mb-6">Your Journey through the Masterpieces Begins Here.</p>
-                    <a href="#" class="bg-indigo-600 text-white px-6 py-3 rounded-full hover:bg-indigo-700">Discover Now</a>
+                    <a href="{{ route('artGallery.index') }}" class="bg-indigo-600 text-white px-6 py-3 rounded-full hover:bg-indigo-700">Discover Now</a>
                 </div>
             </div>
         </div>
@@ -181,32 +181,37 @@
 <section id="community-board" class="py-16 bg-white">
    <div class="container mx-auto">
        <div class="flex flex-wrap md:flex-nowrap space-y-6 md:space-y-0 md:space-x-12">
-           <!-- Community Board Section -->
-           <a href="{{ route('blog.preview',['slug'=>$latestBlog->SLUG]) }}" class="w-full md:w-2/3">
-               <h2 class="text-3xl font-bold text-indigo-800 mb-6">{{ $latestBlog->TITLE }}</h2>
-               <p class="text-gray-600 mb-6">
-                {{ \Illuminate\Support\Str::limit($latestBlog->CONTENT, 128) }}
-               </p>
-               <img src="{{ asset($latestBlog->IMAGE_PATH) }}" alt="{{ $latestBlog->TITLE }}" class="w-full h-56 object-cover rounded-xl shadow-lg mb-6 transform hover:scale-105 transition">
-            </a>
-           <!-- Separator Line -->
-           <div class="hidden md:block w-px bg-gray-300"></div>
-           <!-- Tips, Trends, and Guides Section -->
-           <div class="w-full md:w-1/3">
-               <h2 class="text-2xl font-bold text-indigo-800 mb-6">Tips, Trends, and Guides</h2>
-               <div class="space-y-6">
-                   @foreach($blogs as $blog)
-                   <a href="{{ route('blog.preview',['slug'=>$blog->SLUG]) }}"  class="flex items-center">
-                       <img src="{{ asset($blog->IMAGE_PATH) }}" alt="{{ $blog->TITLE }}" class="w-20 h-20 object-cover rounded-xl shadow-lg mr-6 transform hover:scale-105 transition">
-                       <div>
-                           <h3 class="text-gray-800 font-semibold mb-1">{{ $blog->TITLE }}</h3>
-                           <p class="text-gray-500 text-sm">{{ $blog->created_at->diffForHumans() }}</p>
-                       </div>
-                    </a>
-                   @endforeach
-               </div>
-               <a href="{{ route('blog.all') }}" class="text-indigo-600 font-semibold hover:underline mt-8 block">Take Me to the Blog →</a>
-           </div>
+        @if(is_Null($latestBlog))
+        Currently there's no blog available
+        @else
+        <!-- Community Board Section -->
+        <a href="{{ route('blog.detail',['slug'=>$latestBlog->SLUG]) }}" class="w-full md:w-2/3">
+            <h2 class="text-3xl font-bold text-indigo-800 mb-6">{{ $latestBlog->TITLE }}</h2>
+            <p class="text-gray-600 mb-6">
+             {{ \Illuminate\Support\Str::limit($latestBlog->CONTENT, 128) }}
+            </p>
+            <img src="{{ asset($latestBlog->IMAGE_PATH) }}" alt="{{ $latestBlog->TITLE }}" class="w-full h-56 object-cover rounded-xl shadow-lg mb-6 transform hover:scale-105 transition">
+         </a>
+        <!-- Separator Line -->
+        <div class="hidden md:block w-px bg-gray-300"></div>
+        <!-- Tips, Trends, and Guides Section -->
+        <div class="w-full md:w-1/3">
+            <h2 class="text-2xl font-bold text-indigo-800 mb-6">Tips, Trends, and Guides</h2>
+            <div class="space-y-6">
+                @foreach($blogs as $blog)
+                <a href="{{ route('blog.detail',['slug'=>$blog->SLUG]) }}"  class="flex items-center">
+                    <img src="{{ asset($blog->IMAGE_PATH) }}" alt="{{ $blog->TITLE }}" class="w-20 h-20 object-cover rounded-xl shadow-lg mr-6 transform hover:scale-105 transition">
+                    <div>
+                        <h3 class="text-gray-800 font-semibold mb-1">{{ $blog->TITLE }}</h3>
+                        <p class="text-gray-500 text-sm">{{ $blog->created_at->diffForHumans() }}</p>
+                    </div>
+                 </a>
+                @endforeach
+            </div>
+            <a href="{{ route('blog.all') }}" class="text-indigo-600 font-semibold hover:underline mt-8 block">Take Me to the Blog →</a>
+        </div>
+        @endif
+           
        </div>
    </div>
 </section>
@@ -285,7 +290,7 @@
             <div class="bg-indigo-400 rounded-2xl shadow-lg px-6 py-8 inline-block">
                 <p class="text-white">
                     Didn’t find the answer you are looking for? 
-                    <a href="#" class="text-indigo-600 font-semibold hover:underline">CONTACT SUPPORT</a>
+                    <a href="{{ route('contact-us') }}" class="text-indigo-600 font-semibold hover:underline">CONTACT SUPPORT</a>
                 </p>
             </div>
         </div>

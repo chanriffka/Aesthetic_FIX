@@ -18,6 +18,7 @@ class ArtistPortfolioController extends Controller
 {
     public function store(Request $request)
     {
+        
         $user = Auth::guard('MasterUser')->user();
         $artist = Artist::where('ARTIST_ID','=',$user->Artist->ARTIST_ID)->first();
 
@@ -28,8 +29,8 @@ class ArtistPortfolioController extends Controller
             'artworkHeight' => 'required',
             'dimensionUnit' => 'required',
         ], [
-            'collectionTitle.required' => '* The Collection title is required.',
-            'collectionDescription.required' => '* The Collection description is required.',
+            'portfolioTitle.required' => '* The portfolio title is required.',
+            'portfolioDescription.required' => '* The portfolio description is required.',
         ]);
 
         if ($validated->fails()) {

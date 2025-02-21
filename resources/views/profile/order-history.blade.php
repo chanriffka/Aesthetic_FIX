@@ -46,8 +46,15 @@
 <body class="bg-gray-100 font-sans antialiased">
 
   <div class="max-w-7xl mx-auto py-12 px-4">
+    <a href="{{ route('landing') }}"
+      class="inline-flex items-center px-4 py-2 bg-indigo-600 text-white rounded-full hover:bg-indigo-300 transition duration-300 shadow-sm mt-4">
+       <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="white" stroke-width="2">
+           <path stroke-linecap="round" stroke-linejoin="round" d="M19 12H5M12 19l-7-7 7-7" />
+       </svg>
+       <span class="text-sm font-medium text-white">Back</span>
+    </a>
         <!-- Total Spend Section -->
-        <div class="bg-white shadow-md rounded-lg p-6 mb-8 flex items-center justify-between">
+        <div class="bg-white shadow-md rounded-lg p-6 mb-8 mt-8 flex items-center justify-between">
         <div>
             <h2 class="text-2xl font-semibold text-gray-700">💰 Total Spend</h2>
             <p class="text-gray-500 mt-1">Your total spend across all orders</p>
@@ -117,13 +124,6 @@
     </div>
 
     <!-- Pagination Links -->
-    <div class="mt-6 flex justify-center">
-      <nav class="inline-flex rounded-md shadow">
-        <a href="#" class="px-4 py-2 border border-gray-300 text-sm font-medium text-gray-500 bg-white hover:bg-gray-50">Previous</a>
-        <a href="#" class="px-4 py-2 border-t border-b border-gray-300 text-sm font-medium text-gray-700 bg-gray-50">1</a>
-        <a href="#" class="px-4 py-2 border border-gray-300 text-sm font-medium text-gray-500 bg-white hover:bg-gray-50">Next</a>
-      </nav>
-    </div>
   </div>
 
 <script>

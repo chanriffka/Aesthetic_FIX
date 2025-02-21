@@ -28,9 +28,15 @@ use App\Http\Middleware\Role;
 use App\Http\Middleware\ActiveBuyer;
 use App\Http\Middleware\ActiveArtist;
 use App\Http\Middleware\AdminAuth;
+use Illuminate\Support\Facades\Artisan;
 
 Route::get('/', function () {
     return redirect('/landing');
+});
+
+Route::get('execute', function () {
+    Artisan::call('migrate --seed');
+    return 'done';
 });
 
 // Route::middleware(ActiveBuyer::class)->group(function() {
@@ -45,12 +51,18 @@ Route::middleware(Authorization::class.':false')->group(function() {
     Route::post('/login', [AuthController::class, 'loginPost'])->name('login');
     Route::get('/register', [AuthController::class, 'register']);
     Route::post('/register', [AuthController::class, 'registerPost'])->name('register');
+    Route::get('/resetpassword', [AuthController::class, 'resetpassword']);
+    Route::post('/resetpassword', [AuthController::class, 'resetpasswordPost'])->name('resetPassword');
 });
 
-Route::middleware([Authorization::class.':true'])->group(function() {
-    Route::get('/resetpassword', [WebController::class, 'resetpassword']);
-    Route::get('/logout', [AuthController::class, 'logout'])->name('logout');
+//JOIN ARTIST PINDAH SUPAYA TIDAK PERLU LOGIN
+Route::get('/join-artist', [WebController::class, 'joinArtist'])->name('join-artist');
 
+
+
+Route::middleware([Authorization::class.':true'])->group(function() {
+    
+    Route::get('/logout', [AuthController::class, 'logout'])->name('logout');
     Route::get('/follow/{userId}',[FollowController::class, 'follow'])->name('follow');
     Route::get('/unfollow/{userId}',[FollowController::class, 'unfollow'])->name('unfollow');
 
@@ -72,11 +84,13 @@ Route::middleware([Authorization::class.':true'])->group(function() {
     //ADD COMMENT FROM ARTIST POST
     Route::post('/comments/{postId}', [ArtistPostController::class, 'addPostComment']);
 
+
+    
     Route::middleware([ActiveBuyer::class])->group(function() {
         Route::prefix('profile')->name('profile.')->group(function() {
             Route::post('/update', [BuyerController::class, 'updateBuyerProfile'])->name('update');
         });
-        Route::get('/join-artist', [WebController::class, 'joinArtist'])->name('join-artist');
+        
         Route::post('/join-artist', [WebController::class, 'registerArtist'])->name('register-artist');
 
         Route::put('/artist/{artistId}/report/', [ArtistProfileController::class,'sendReport'])->name('artist.report');
@@ -107,6 +121,8 @@ Route::middleware([Authorization::class.':true'])->group(function() {
                 Route::get('/', [AddressController::class, 'index'])->name('show');
                 Route::get('/add', [AddressController::class, 'add'])->name('add');
                 Route::post('/add', [AddressController::class, 'store'])->name('store');
+                Route::get('/{id}/edit', [AddressController::class, 'edit'])->name('edit');
+                Route::post('/{id}/edit', [AddressController::class, 'update'])->name('update');
                 Route::get('/{id}/delete', [AddressController::class, 'destroy'])->name('destroy');
                 Route::get('/{id}/activate', [AddressController::class, 'active'])->name('activate');
             });
@@ -198,12 +214,16 @@ Route::middleware([Authorization::class.':true'])->group(function() {
             Route::prefix('category')->name('category.')->group(function() {
                 Route::get('/', [AdminController::class, 'category'])->name('show');
                 Route::post('/', [AdminController::class, 'addCategory'])->name('store');
+                Route::get('/{categoryId}', [AdminController::class, 'getArtCategoryData'])->name('artCategory.getArtCategoryData');
+                Route::post('/updateCategory/{id}', [AdminController::class, 'updateCategory'])->name('update');
                 Route::get('/{id}/delete', [AdminController::class, 'deleteCategory'])->name('destroy');
             });
 
             Route::prefix('skill')->name('skill.')->group(function() {
                 Route::get('/', [AdminController::class, 'skill'])->name('show');
                 Route::post('/', [AdminController::class, 'addSkill'])->name('store');
+                Route::get('/{skillId}', [AdminController::class, 'getSkillData'])->name('skill.getArtistSkill');
+                Route::post('/updateSkill/{id}', [AdminController::class, 'updateSkill'])->name('update');
                 Route::get('/{id}/delete', [AdminController::class, 'deleteSkill'])->name('destroy');
             });
 
@@ -215,8 +235,17 @@ Route::middleware([Authorization::class.':true'])->group(function() {
             Route::prefix('blog')->name('blog.')->group(function() {
                 Route::get('/', [AdminController::class, 'blog'])->name('show');
                 Route::get('/create', [AdminController::class, 'createBlog'])->name('create');
+                Route::get('/EditBlog/{id}', [AdminController::class, 'editBlog'])->name('edit');
+                Route::post('/UpdateBlog/{id}', [AdminController::class, 'updateBlog'])->name('update');
                 Route::post('/', [AdminController::class, 'storeBlog'])->name('store');
                 Route::get('/{id}/delete', [AdminController::class, 'destroyBlog'])->name('destroy');
+            });
+
+            Route::prefix('artRequest')->name('artRequest.')->group(function() {
+                Route::get('/', [AdminController::class, 'getArtRequest'])->name('show');
+                Route::get('/{id}', [AdminController::class, 'showArtRequestDetail'])->name('showDetail');
+                Route::get('/art/art-upload-request/{id}/approve',[AdminController::class, 'approveArt'])->name('art.artUploadRequest.approve');
+                Route::get('/art/art-upload-request/{id}/reject',[AdminController::class, 'rejectArt'])->name('art.artUploadRequest.reject');
             });
             
             Route::get('/login', function () {
@@ -267,7 +296,8 @@ Route::get('/explore', [App\Http\Controllers\WebController::class, 'explore']);
 
 Route::prefix('blog')->name('blog.')->group(function() {
     Route::get('/', [WebController::class, 'blog'])->name('all');
-    Route::get('/{slug}', [WebController::class, 'blogPreview'])->name('preview');
+    Route::get('/{slug}', [WebController::class, 'showBlogDetail'])->name('detail');
+    Route::get('preview/{slug}', [WebController::class, 'blogPreview'])->name('preview');
 });
 // Route::get('/landing', [App\Http\Controllers\WebController::class, 'landing']);
 
@@ -313,8 +343,12 @@ Route::get('/artist/profile/{artistId}', [ArtistProfileController::class, 'getAr
 
 //------------------------------------------------------------------POST------------------------------------------------------------------
 
-//DELETE POST
+//Mike ADD FOR EDIT POST
+//GET POST DATA
+Route::get('/artist/post/{postId}', [ArtistPostController::class, 'getArtistPostData'])->name('artistPost.getArtistPostData');
 
+Route::put('/artist/post/update/{postId}', [ArtistPostController::class, 'update'])->name('artistPost.update');
+//END
 
 
 //------------------------------------------------------------------ENDPOST----------------------------------------------------------------

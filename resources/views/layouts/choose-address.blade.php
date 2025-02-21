@@ -42,9 +42,11 @@
                             </p>
                         </div>
                     <!-- Edit Button -->
-                        <button class="text-indigo-500 hover:text-indigo-700 transition">
-                            <i class="fas fa-edit"></i>
-                        </button>
+                        <a href="{{ route('order.address.edit', ['id'=> $address->ADDRESS_ID]) }}">
+                            <button class="text-indigo-500 hover:text-indigo-700 transition">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                        </a>
                     </div>
                     <!-- Delete Button -->
                     <div class="flex justify-end mt-4">

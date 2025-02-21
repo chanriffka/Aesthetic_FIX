@@ -12,7 +12,7 @@ class Artist extends Model
     use HasFactory;
     protected $table = 'ARTIST';
     protected $primaryKey = 'ARTIST_ID';
-    protected $fillable = ['USER_ID', 'LOCATION','ROLE','BIO','ABOUT','X','PINTEREST','INSTAGRAM','LINKEDIN','IS_ACTIVE','VIEW'];
+    protected $fillable = ['USER_ID', 'LOCATION','ROLE','BIO','ABOUT','X','PINTEREST','INSTAGRAM','LINKEDIN','IS_ACTIVE','VIEW','IS_BAN'];
 
     public function isActive()
     {
@@ -22,6 +22,16 @@ class Artist extends Model
             return false;
         }
     }
+
+    public function isBan()
+    {
+        if($this->IS_BAN == 1) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+    
     
     public function addView()
     {

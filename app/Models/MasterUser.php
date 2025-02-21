@@ -190,15 +190,20 @@ class MasterUser extends Authenticatable
         $currentMonthStart = Carbon::now()->startOfMonth();
         $currentMonthEnd = Carbon::now()->endOfMonth();
 
-        return $this->Arts()->with('OrderItems')
-        ->whereBetween('created_at', [$currentMonthStart, $currentMonthEnd])
-        ->get()
-        ->flatMap(function ($art) {
-            return $art->OrderItems;
-        })
-        ->sum(function ($orderItem) {
-            return $orderItem->QUANTITY * $orderItem->PRICE_PER_ITEM;
-        });
+        return $this->Arts()
+            ->whereHas('OrderItems', function ($query) use ($currentMonthStart, $currentMonthEnd) {
+                $query->whereBetween('created_at', [$currentMonthStart, $currentMonthEnd]);
+            })
+            ->with(['OrderItems' => function ($query) use ($currentMonthStart, $currentMonthEnd) {
+                $query->whereBetween('created_at', [$currentMonthStart, $currentMonthEnd]);
+            }])
+            ->get()
+            ->flatMap(function ($art) {
+                return $art->OrderItems;
+            })
+            ->sum(function ($orderItem) {
+                return $orderItem->QUANTITY * $orderItem->PRICE_PER_ITEM;
+            });
     }
 
     public function getSoldItems()
@@ -206,6 +211,17 @@ class MasterUser extends Authenticatable
         return OrderItem::whereHas('Art', function ($query) {
             $query->where('USER_ID', $this->USER_ID);
         })->get();
+    }
+
+    public function getYearSoldItems()
+    {
+        return OrderItem::whereHas('Art', function ($query) {
+            $query->where('USER_ID', $this->USER_ID);
+        })
+        ->selectRaw('DATENAME(YEAR, created_at) AS YEAR_NAME')
+        ->groupByRaw('DATENAME(YEAR, created_at), YEAR(created_at)')
+        ->orderByRaw('YEAR(created_at)')
+        ->get();
     }
 
     public function getTotalSpendingAttribute()

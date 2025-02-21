@@ -8,7 +8,7 @@
 <body class="bg-gray-100">
   <div class="max-w-screen-lg mx-auto">
 <!-- Back Button with Arrow Icon -->
-<a href="javascript:history.back()" 
+<a href="{{ route('artist.show', ['id' => $post->Artist->ARTIST_ID, 'section' => 'posts']) }}"
    class="inline-flex items-center px-4 py-2 bg-indigo-600 text-white rounded-full hover:bg-indigo-300 transition duration-300 shadow-sm mt-4">
     <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="white" stroke-width="2">
         <path stroke-linecap="round" stroke-linejoin="round" d="M19 12H5M12 19l-7-7 7-7" />
@@ -47,8 +47,24 @@
           <button class="flex items-center space-x-1"><i class="far fa-heart"></i><span>{{ $post->PostLikes->count() }}</span></button>
           @endif
           <button class="flex items-center space-x-1"><i class="far fa-comment"></i><span>{{ $post->PostComments->count() }}</span></button>
-          <button class="flex items-center space-x-1"><i class="far fa-share-square"></i><span>Share</span></button>
+          <button id="sharePostButton" onclick="openSharePostModal()" class="flex items-center space-x-1"><i class="far fa-share-square"></i><span>Share</span></button>
         </div>
+      </div>
+    </div>
+
+    {{-- Share Post Modal --}}
+    <div id="sharePostModal" class="modal fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden modal-overlay">
+      <div class="bg-white p-8 rounded-lg shadow-lg w-full max-w-xl">
+        <h2 class="text-3xl font-semibold text-gray-800 mb-6">Share Post</h2>
+          <div class="py-2">
+              <label for="sharePostLink" class="block text-gray-700 font-semibold mb-2">Post Link</label>
+              <input type="text" id="sharePostLink" name="sharePostLink" value={{ url()->current() }} class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none transition" placeholder="Enter collection title" readonly>
+          </div>
+          <div class="flex justify-end space-x-3">
+              <button type="button" id="closeSharePostButtonModal" onclick="closeSharePostModal()" class="bg-gray-300 text-gray-800 px-4 py-2 rounded-lg hover:bg-gray-400 transition duration-200">Close</button>
+              <button type="button" id="copyPostLinkButton" onclick="copyPostLink()" class="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 shadow-md transition duration-300 transform hover:scale-105">Copy Link</button>
+          </div>
+      </form>
       </div>
     </div>
 
@@ -93,11 +109,19 @@
   </div>
 
   <script>
-    const commentsData = [
-      { name: "Anya", date: "1 month ago", text: "The fantasy illustrations are pure magic!" },
-      { name: "Sam Jetstream", date: "3 months ago", text: "The neon-drenched streets are amazing!" }
-      { name: "Aglio", date: "1 minutes ago", text: "The neon-drenched streets are amazing!" }
-    ];
+    function openSharePostModal(){
+      document.getElementById('sharePostModal').classList.remove('hidden');
+    }
+
+    function closeSharePostModal(){
+      document.getElementById('sharePostModal').classList.add('hidden');
+    }
+
+    // const commentsData = [
+    //   { name: "Anya", date: "1 month ago", text: "The fantasy illustrations are pure magic!" },
+    //   { name: "Sam Jetstream", date: "3 months ago", text: "The neon-drenched streets are amazing!" }
+    //   { name: "Aglio", date: "1 minutes ago", text: "The neon-drenched streets are amazing!" }
+    // ];
 
     function addComment() {
       const commentText = document.getElementById('newComment').value.trim();
@@ -130,8 +154,25 @@
       });
     }
 
+    function copyPostLink() {
+    // Get the text field
+        var copyText = document.getElementById("sharePostLink");
+
+        // Select the text field
+        copyText.select();
+        copyText.setSelectionRange(0, 99999); // For mobile devices
+
+        try {
+            // Fallback method for older browsers
+            document.execCommand("copy");
+            alert("Link Copied: " + copyText.value);
+        } catch (err) { 
+            console.error("Failed to copy: ", err);
+        }
+    }
+
     // Initial render
-    renderComments();
+    // renderComments();
   </script>
 </body>
 </html>

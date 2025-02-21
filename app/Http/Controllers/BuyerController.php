@@ -33,7 +33,7 @@ class BuyerController extends Controller
         $user->USERNAME = $request->username;
         $buyer->FULLNAME = $request->name;
         $buyer->PHONE_NUMBER = $request->phone;
-        $buyer->ADDRESS = $request->address;
+        $buyer->ADDRESS = "";
         $imagePath = $buyer->PROFILE_IMAGE_URL;
 
         if ($request->hasFile('picture')) {

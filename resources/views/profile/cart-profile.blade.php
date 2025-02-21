@@ -42,7 +42,7 @@
 <div class="max-w-4xl mx-auto bg-white p-8 rounded-lg shadow-md">
   <div class="flex justify-between items-center border-b border-gray-200 pb-4 mb-6">
     <h1 class="text-3xl font-semibold">Your Art Cart</h1>
-    <a href="{{ url('artists') }}" class="text-indigo-600 hover:text-red-600"><i class="fas fa-arrow-left"></i> Continue Shopping</a>
+    <a href="{{ url('explore') }}" class="text-indigo-600 hover:text-red-600"><i class="fas fa-arrow-left"></i> Continue Shopping</a>
   </div>
 
   <!-- Cart Items Section -->

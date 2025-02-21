@@ -204,7 +204,7 @@
       <div class="w-1/4 ml-4">
         <div class="flex justify-between items-center">
           <h2 class="text-xl">More by {{ $portfolio->MasterUser->Buyer->FULLNAME }}</h2>
-          <a href="{{ route('artGallery.index') }}" class="text-black hover:text-indigo-500 transition">more →</a>
+          <a href="{{ route('artist.show', ['id'=>$portfolio->MasterUser->Artist->ARTIST_ID,'section'=>'portfolio']) }}" class="text-black hover:text-indigo-500 transition">more →</a>
         </div>
         <div class="grid grid-cols-2 gap-4 mt-2">
           @foreach($morePortfolios as $item)
@@ -268,7 +268,7 @@
 
  <!-- Modal Header -->
  <div class="flex justify-between items-center border-b pb-4 mb-6">
-     <h2 class="text-2xl font-bold text-gray-800">Edit Artwork {{$portfolio->ArtImages()->first()->IMAGE_PATH}}</h2>
+     <h2 class="text-2xl font-bold text-gray-800">Edit Portfolio</h2>
      <button type="button" onclick="closeEditModal()" class="text-gray-500 hover:text-red-500 text-2xl">&times;</button>
  </div>
 
@@ -325,7 +325,7 @@
          <div class="flex items-center gap-3">
              <input type="text" id="selectedCategories" readonly
                  class="w-full px-4 py-2 border rounded-lg focus:ring-indigo-500 focus:border-indigo-500 bg-gray-100 cursor-not-allowed" 
-                 placeholder="Select categories (max 6)">
+                 placeholder="Select categories (max 3)">
              <button type="button" onclick="toggleCategorySelection()" 
                      class="text-indigo-600 hover:text-indigo-800 transition">
                  <i class="fas fa-plus"></i>

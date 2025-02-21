@@ -40,6 +40,8 @@ class ArtGalleryController extends Controller
 
         $artistRecommendations = Artist::where('ROLE', $role)
         ->where('USER_ID', '!=', $portfolio->MasterUser->USER_ID)
+        ->where('IS_ACTIVE', '=', 1)
+        ->where('IS_BAN', '=', 0)
         ->limit(4) // Exclude the current artist
         ->get();
 

@@ -19,12 +19,10 @@ use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Storage;
 use Intervention\Image\Facades\Image;
 
+use function PHPUnit\Framework\isNull;
+
 class WebController extends Controller
 {
-    public function resetpassword(Request $request)
-    {
-        return view('resetpassword'); 
-    }
 
     public function showArtist($id, $section = 'home')
 {
@@ -59,13 +57,50 @@ class WebController extends Controller
 
     return view('artists.index', compact('artists'));
     }
+    
     public function explore(Request $request)
     {
         $carts = null;
         if(Auth::user() != null) {
             $carts = Auth::user()->Carts;
         }
-        $arts = Art::all();
+        
+        if (Auth::guard('MasterUser')->check()){
+            // $arts = Art::where('IS_SALE', '=', 1)
+            //         ->where('USER_ID', '!=', Auth::user()->USER_ID)
+            //         ->get();
+            if(Auth::user()->USER_LEVEL == 2 || Auth::user()->USER_LEVEL == 3)
+            {
+                $arts = Art::where('IS_SALE', 1)
+                    ->where('USER_ID', '!=', Auth::user()->USER_ID) // Replace auth()->id() with the current user ID if needed
+                    ->whereDoesntHave('OrderItems', function ($query) {
+                        $query->select('ORDER_ITEM_ID'); // Optional: This is just for clarity; Laravel handles it automatically
+                    })
+                    ->get();
+            }
+            else
+            {
+                $arts = Art::where('IS_SALE', 1)
+                    ->where('USER_ID', '!=', Auth::user()->USER_ID) // Replace auth()->id() with the current user ID if needed
+                    ->where('IS_VERIF', '=', 1)
+                    ->whereDoesntHave('OrderItems', function ($query) {
+                        $query->select('ORDER_ITEM_ID'); // Optional: This is just for clarity; Laravel handles it automatically
+                    })
+                    ->get();
+            }
+            
+        }
+        else{
+            // $arts = Art::where('IS_SALE', '=', 1)
+            //         ->get();
+
+            $arts = Art::where('IS_SALE', 1) // Replace auth()->id() with the current user ID if needed
+                    ->whereDoesntHave('OrderItems', function ($query) {
+                        $query->select('ORDER_ITEM_ID'); // Optional: This is just for clarity; Laravel handles it automatically
+                    })
+                    ->get();
+        }
+        
         $artCategories = ArtCategoryMaster::all();
         return view('explore', compact('carts', 'arts', 'artCategories'));
     }
@@ -73,14 +108,21 @@ class WebController extends Controller
     public function landing(Request $request)
     {
         $carts = null;
-        if(Auth::user() != null) {
+        if (Auth::user() != null) {
             $carts = Auth::user()->Carts;
         }
 
-        $latestBlog = Blog::orderBy('created_at','DESC')->first();
-        $blogs = Blog::where('BLOG_ID','!=',$latestBlog->BLOG_ID)->limit(3)->get();
+        // Fetch latest blog or create an empty Blog object
+        $latestBlog = Blog::orderBy('created_at', 'DESC')->first();
+        
+        if (is_null($latestBlog)) {  // ✅ Correct function: `is_null()`
+            $latestBlog = new Blog(); // Ensures latestBlog is always an object
+            $blogs = collect([]); // ✅ Ensures $blogs is an empty collection, not a single model
+        } else {
+            $blogs = Blog::where('BLOG_ID', '!=', $latestBlog->BLOG_ID)->limit(3)->get();
+        }
 
-        return view('landing', compact('carts','latestBlog','blogs'));
+        return view('landing', compact('carts', 'latestBlog', 'blogs'));
     }
 
     public function landing2(Request $request)
@@ -114,12 +156,25 @@ class WebController extends Controller
     public function showArtwork($id)
     {
         $artwork = Art::find($id);
-        $artwork->addView();
-        $moreArtWorks = Art::where('USER_ID',$artwork->USER_ID)->where('ART_ID', '!=', $artwork->ART_ID)->limit(4)->get();
-    
+
         if (!isset($artwork)) {
+
             abort(404, 'Artwork not found.');
+
         }
+
+        $artwork->addView();
+
+        $moreArtWorks = Art::where('IS_SALE', 1)
+                    ->where('USER_ID', '=', $artwork->USER_ID)
+                    ->where('ART_ID', '!=', $id) // Replace auth()->id() with the current user ID if needed
+                    ->whereDoesntHave('OrderItems', function ($query) {
+                        $query->select('ORDER_ITEM_ID'); // Optional: This is just for clarity; Laravel handles it automatically
+                    })
+                    ->get();
+
+        // $moreArtWorks = Art::where('USER_ID',$artwork->USER_ID)->where('ART_ID', '!=', $artwork->ART_ID)->limit(4)->get();
+    
 
         $carts = null;
         if(Auth::user() != null) {
@@ -142,7 +197,7 @@ class WebController extends Controller
         // }
     
         $imageClass = 'h-full w-full object-cover';
-
+        
         return view('artists.sections.artwork-detail', compact('artwork', 'imageClass','moreArtWorks','carts'));
     }    
     public function showCategory($category)
@@ -215,15 +270,20 @@ public function aboutUs()
 
 public function joinArtist()
 {
-    $user = Auth::guard('MasterUser')->user();
-    $skillsMaster = SkillMaster::all();
-
-    return view('profile.join-artist', [
-        'USER' => $user,
-        'ROLE' => $user->USER_LEVEL,
-        'BUYER_DATA' => $user->Buyer,
-        'skillsMaster' => $skillsMaster
-    ]);
+    if(Auth::Check())
+    {
+        $user = Auth::guard('MasterUser')->user();
+        $skillsMaster = SkillMaster::all();
+        return view('profile.join-artist', [
+            'USER' => $user,
+            'ROLE' => $user->USER_LEVEL,
+            'BUYER_DATA' => $user->Buyer,
+            'skillsMaster' => $skillsMaster
+        ]);
+    }
+    else{
+        return view('profile.join-artist');
+    }    
 }
 
 public function registerArtist(Request $request)
@@ -269,7 +329,7 @@ public function insightArtist()
         return view('footer.blog', compact('blogs'));
     }
 
-    public function blogPreview($slug)
+    public function showBlogDetail($slug)
     {
         $blogs = Blog::orderBy('created_at','DESC')->limit(4)->get();
         $blog = Blog::where('SLUG',$slug)->first();
@@ -282,6 +342,21 @@ public function insightArtist()
         }
 
         return view('footer.blog-detail',compact('blog','blogs'));
+    }
+
+    public function blogPreview($slug)
+    {
+        $blogs = Blog::orderBy('created_at','DESC')->limit(4)->get();
+        $blog = Blog::where('SLUG',$slug)->first();
+
+        $blog->VIEW = $blog->VIEW + 1;
+        $blog->save();
+
+        if($blog == null) {
+            return redirect()->back()->withErrors(['message'=>'Blog not found!']);
+        }
+
+        return view('admin.blog-detail-preview',compact('blog','blogs'));
     }
 
     public function blogDetail()

@@ -8,8 +8,9 @@
     <div class="flex items-center mb-4">
         <!-- Search Bar -->
         <input
+            id="searchInput"
             type="text"
-            placeholder="Search for users..."
+            placeholder="Search Report by Reporter Name..."
             class="w-full px-4 py-2 border rounded-md shadow-sm focus:ring-2 focus:ring-indigo-400 focus:outline-none"
         />
 
@@ -48,7 +49,7 @@
             <tbody class="divide-y divide-gray-200">
                 <!-- Example User Rows -->
                 @foreach($reports as $report)
-                <tr class="hover:bg-indigo-50">
+                <tr class="hover:bg-indigo-50" data-report-name="{{ strtolower($report->MasterUser->Buyer->FULLNAME) }}" id="blog" data-report-id="{{$report->ARTIST_REPORT_ID }}">
                     <td class="px-6 py-4">
                         {{ $report->ARTIST_REPORT_ID }}
                     </td>
@@ -87,16 +88,29 @@
 
         <!-- Pagination -->
         <div class="px-6 py-4 bg-gray-50 flex justify-between items-center">
-            <p class="text-sm text-gray-500">Showing 1-10 of 50</p>
-            <div class="flex space-x-2">
-                <button class="px-3 py-1 bg-gray-200 text-gray-600 rounded-md hover:bg-gray-300">
-                    Previous
-                </button>
-                <button class="px-3 py-1 bg-gray-200 text-gray-600 rounded-md hover:bg-gray-300">
-                    Next
-                </button>
-            </div>
         </div>
     </div>
 </div>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const searchInput = document.getElementById('searchInput');
+        const rows = document.querySelectorAll('tbody tr');
+
+        function filterTable() {
+            const searchText = searchInput.value.toLowerCase();
+
+            rows.forEach(row => {
+                const buyerName = row.getAttribute('data-report-name');
+
+                if (buyerName.includes(searchText)) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+        }
+
+        searchInput.addEventListener('input', filterTable);
+    });
+</script>
 @endsection

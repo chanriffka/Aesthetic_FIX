@@ -75,15 +75,6 @@
 
     <!-- Pagination -->
     <div class="px-6 py-4 bg-gray-50 flex justify-between items-center">
-        <p class="text-sm text-gray-500">Showing 1-2 of 2</p>
-        <div class="flex space-x-2">
-            <button class="px-3 py-1 bg-gray-200 text-gray-600 rounded-md hover:bg-gray-300">
-                Previous
-            </button>
-            <button class="px-3 py-1 bg-gray-200 text-gray-600 rounded-md hover:bg-gray-300">
-                Next
-            </button>
-        </div>
     </div>
 </div>
 

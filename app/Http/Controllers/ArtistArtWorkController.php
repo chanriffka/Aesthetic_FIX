@@ -21,7 +21,8 @@ class ArtistArtWorkController extends Controller
     public function showAllArtwork($ARTIST_ID)
     {
         // Example data for the artworks
-        $artworks =  DB::table('ART')
+        if(Auth::user()->USER_LEVEL == 2 || Auth::user()->USER_LEVEL == 3){
+            $artworks =  DB::table('ART')
                     ->select(
                         'ART.ART_ID', 
                         'ART.ART_TITLE', 
@@ -37,6 +38,27 @@ class ArtistArtWorkController extends Controller
                     ->where('ART.ARTIST_ID', '=', $ARTIST_ID)
                     ->orderBy('ART.CREATED_AT', 'desc')
                     ->get(); 
+        }
+        else{
+            $artworks =  DB::table('ART')
+                    ->select(
+                        'ART.ART_ID', 
+                        'ART.ART_TITLE', 
+                        'ART_IMAGE.IMAGE_PATH', 
+                        'MASTER_USER.USERNAME',
+                        'ART.IS_SALE', 
+                        DB::raw("FORMAT(ART.PRICE, 'N0') as ART_PRICE"), 
+                        DB::raw("YEAR(ART.CREATED_AT) as ART_YEAR")
+                    )
+                    ->join('ART_IMAGE', 'ART.ART_ID', '=', 'ART_IMAGE.ART_ID')
+                    ->join('ARTIST', 'ARTIST.ARTIST_ID', '=', 'ART.ARTIST_ID')
+                    ->join('MASTER_USER', 'MASTER_USER.USER_ID', '=', 'ARTIST.USER_ID')
+                    ->where('ART.ARTIST_ID', '=', $ARTIST_ID)
+                    ->where('ART.IS_VERIF', '=', 1)
+                    ->orderBy('ART.CREATED_AT', 'desc')
+                    ->get(); 
+        }
+        
                             
         $artistId = $ARTIST_ID;
 
@@ -71,10 +93,12 @@ class ArtistArtWorkController extends Controller
             'artworkWidth' => 'required',
             'artworkHeight' => 'required',
             'dimensionUnit' => 'required',
+            'artworkImageUpload' => 'required|array|max:5', // Limit to 5 files
+            'artworkImageUpload.*' => 'required|image|mimes:jpeg,png,jpg,gif,svg|max:2048' // Adjust validation 
         ]);
 
         if ($validated->fails()) {
-            return redirect()->back()->withError($validated->error());
+            return redirect()->back()->withError($validated->errors());
         }
 
         $art = $user->Arts()->create([
@@ -84,7 +108,8 @@ class ArtistArtWorkController extends Controller
             'PRICE' => $request->artworkPrice,
             'WIDTH' => $request->artworkWidth,
             'HEIGHT' => $request->artworkHeight,
-            'UNIT' => $request->dimensionUnit
+            'UNIT' => $request->dimensionUnit,
+            'IS_VERIF' => false
         ]);
 
         if($request->category_art != null) {
@@ -97,27 +122,23 @@ class ArtistArtWorkController extends Controller
 
         $imagePath = null;
 
-        // If URL is provided
-        if ($request->filled('artworkImageLink')) {
-            $imagePath = $request->input('artworkImageLink');
-        }
-
         // If file is uploaded
         if ($request->hasFile('artworkImageUpload')) {
-            $uploadedFile = $request->file('artworkImageUpload');
-            $imagePath = $uploadedFile->store('images/art', 'public'); // Save file in the `storage/app/public/images/art` directory
+            foreach($request->file('artworkImageUpload') as $artImages)
+            {
+                $imagePath = $artImages->store('images/art', 'public'); // Save file in the `storage/app/public/images/art` directory
+                $art->ArtImages()->create([
+                    'IMAGE_PATH' => $imagePath
+                ]);
+            }
         }
 
-        $art->ArtImages()->create([
-            'IMAGE_PATH' => $imagePath
-        ]);
-        
         return redirect()->back()->with('status','New artwork has been added!');
     }
 
     public function deleteArtWork($artworkId){
         $user = Auth::guard('MasterUser')->user();
-        $artist = Artist::where('ARTIST_ID','=',$user->Artist->ARTIST_ID)->first();
+        $artist = Artist::where('ARTIST_ID' ,'=',$user->Artist->ARTIST_ID)->first();
         if($artist == null) {
             abort(404, 'You are not artist');
         }
@@ -150,8 +171,18 @@ class ArtistArtWorkController extends Controller
 
     public function update($id, Request $request)
     {
+        // dd($request->all());
         $user = Auth::guard('MasterUser')->user();
         $artwork = Art::find($id);
+
+        // Get the list of removed existing images
+        $removedExistingImages = json_decode($request->input('removed_existing_images'), true);
+
+        // Delete the removed images from storage and database
+        foreach ($removedExistingImages as $removedImage) {
+            Storage::delete($removedImage['IMAGE_PATH']); // Delete from storage
+            ArtImage::where('IMAGE_PATH', $removedImage['IMAGE_PATH'])->delete(); // Delete from database
+        }
 
         if($artwork->USER_ID != $user->USER_ID) {
             return redirect()->back()->withError(['message'=>'Artwork is not yours']);
@@ -183,23 +214,30 @@ class ArtistArtWorkController extends Controller
 
         $imagePath = null;
 
-        // If URL is provided
-        if ($request->filled('imageLink')) {
-            $imagePath = $request->input('imageLink');
-            $this->deleteImage($artwork->ART_ID);
+        // Retrieve removed image IDs from request
+        $removedImageIds = $request->input('removed_images', []);
+
+        // Delete images from storage and database
+        if (!empty($removedImageIds)) {
+            $imagesToDelete = $artwork->ArtImages()->whereIn('id', $removedImageIds)->get();
+
+            foreach ($imagesToDelete as $image) {
+                if (Str::startsWith($image->IMAGE_PATH, 'images/art/')) {
+                    Storage::disk('public')->delete($image->IMAGE_PATH);
+                }
+                $image->delete(); // Remove from database
+            }
         }
 
-        // If file is uploaded
-        if ($request->hasFile('imageFile')) {
-            $uploadedFile = $request->file('imageFile');
-            $imagePath = $uploadedFile->store('images/art', 'public'); // Save file in the `storage/app/public/images/art` directory
-            $this->deleteImage($artwork->ART_ID);
-        }
-
-        if($imagePath != null) {
-            $artwork->ArtImages()->create([
-                'IMAGE_PATH' => $imagePath
-            ]);
+         // If file is uploaded
+         if ($request->hasFile('imageFile')) {
+            foreach($request->file('imageFile') as $artImages)
+            {
+                $imagePath = $artImages->store('images/art', 'public'); // Save file in the `storage/app/public/images/art` directory
+                $artwork->ArtImages()->create([
+                    'IMAGE_PATH' => $imagePath
+                ]);
+            }
         }
 
         $artwork->save();
@@ -234,6 +272,6 @@ class ArtistArtWorkController extends Controller
             ]);
         }
 
-        return redirect()->back()->with('status','art being liked!');
+        return redirect()->back();
     }
 }

@@ -131,7 +131,7 @@
         <button onclick="window.location.href='{{ route('order.process') }}'" class="w-full bg-indigo-600 text-white py-3 mt-6 rounded-lg text-base font-semibold hover:bg-indigo-800 transition">Checkout</button> <!-- Reduced font size -->
         <p class="text-center mt-4 text-sm text-gray-500">
           or
-          <a href="{{ url('artists') }}" class="text-indigo-600 hover:underline">Continue Shopping →</a> <!-- Reduced font size -->
+          <a href="{{ url('explore') }}" class="text-indigo-600 hover:underline">Continue Shopping →</a> <!-- Reduced font size -->
         </p>
         @else
         <span class="text-gray-500">Add some art to cart to checkout</span>

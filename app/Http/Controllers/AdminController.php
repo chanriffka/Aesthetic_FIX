@@ -45,7 +45,9 @@ class AdminController extends Controller
 
     public function buyer()
     {
-        $buyers = Buyer::all();
+        $buyers = Buyer::whereHas('MasterUser', function ($query) {
+            $query->where('USER_LEVEL','!=',3);
+        })->get();
         return view('admin.buyers', compact('buyers'));
     }
 
@@ -79,13 +81,13 @@ class AdminController extends Controller
         $result = "";
         $artist = Artist::find($id);
         $user = MasterUser::find($artist->USER_ID);
-        if ($artist->isActive()) {
+        if (!($artist->isBan())) {
             Mail::to($artist->MasterUser->EMAIL)->send(new DeactiveArtist($artist));
-            $artist->IS_ACTIVE = 0;
+            $artist->IS_BAN = 1;
             $result = "deactivated";
         } else {
             Mail::to($artist->MasterUser->EMAIL)->send(new ActiveArtist($artist));
-            $artist->IS_ACTIVE = 1;
+            $artist->IS_BAN = 0;
             $result = "activated";
         }
         $artist->save();
@@ -112,6 +114,35 @@ class AdminController extends Controller
         $category = ArtCategoryMaster::create($request->all());
 
         return redirect()->back()->with('status','Category "'.$category->DESCR.'" added!');
+    }
+
+    public function getArtCategoryData($id){
+        $category = ArtCategoryMaster::find($id);
+
+        // Check if artist exists
+        if (!$category) {
+            return response()->json(['error' => 'Category not found'], 404);
+        }
+
+        return response()->json($category);
+    }
+
+    public function updateCategory(Request $request, $id)
+    {
+        $category = ArtCategoryMaster::find($id);
+        $oldCategory = $category->DESCR;
+        $validated = Validator::make($request->all(), [
+            'DESCREdit' => 'required',
+        ]);
+        $category->DESCR = $request->DESCREdit;
+
+        if ($validated->fails()) {
+            return redirect()->back()->withError($validated->errors());
+        }
+
+        $category->save();
+
+        return redirect()->back()->with('status','Category "'.$oldCategory.'" updated!');
     }
 
     public function deleteCategory($id)
@@ -145,6 +176,35 @@ class AdminController extends Controller
         $skill = SkillMaster::create($request->all());
 
         return redirect()->back()->with('status','Skill "'.$skill->DESCR.'" added!');
+    }
+
+    public function getSkillData($id){
+        $skill = SkillMaster::find($id);
+
+        // Check if artist exists
+        if (!$skill) {
+            return response()->json(['error' => 'skill not found'], 404);
+        }
+
+        return response()->json($skill);
+    }
+
+    public function updateSkill(Request $request, $id)
+    {
+        $skill = SkillMaster::find($id);
+        $oldSkill = $skill->DESCR;
+        $validated = Validator::make($request->all(), [
+            'DESCREdit' => 'required',
+        ]);
+        $skill->DESCR = $request->DESCREdit;
+
+        if ($validated->fails()) {
+            return redirect()->back()->withError($validated->errors());
+        }
+
+        $skill->save();
+
+        return redirect()->back()->with('status','Skill "'.$oldSkill.'" updated!');
     }
 
     public function deleteSkill($id)
@@ -223,9 +283,85 @@ class AdminController extends Controller
         return view('admin.blogs', compact('blogs'));
     }
 
+    public function getArtRequest()
+    {
+        $arts = Art::where('IS_VERIF','=',false)->get();
+        return view('admin.artwork-request', compact('arts'));
+    }
+
+    public function showArtRequestDetail($artId)
+    {
+        $artwork = Art::find($artId);
+        return view('admin.review-artwork', compact('artwork'));
+    }
+
+    public function approveArt($artId){
+        $artwork = Art::find($artId);
+
+        $isVerif = $artwork->IS_VERIF;
+
+        if(!($isVerif))
+        {
+            $artwork->IS_VERIF = 1;
+            $artwork->save();
+        }
+        return redirect()->route('admin.artRequest.show')->with('status','Art '.$artwork->ART_TITLE.' is '. $artwork->getStatus());
+    }
+
+    public function rejectArt($artId){
+        $artwork = Art::find($artId);
+        $artwork->delete();
+        return redirect()->route('admin.artRequest.show')->with('status','Art '.$artwork->ART_TITLE.' is '. $artwork->getStatus());
+    }
+
     public function createBlog()
     {
         return view('admin.blog-form');
+    }
+
+    public function editBlog($id)
+    {
+        $blog = Blog::find($id);
+
+        return view('admin.blog-form-edit', compact('blog'));
+    
+    }
+
+    public function updateBlog(Request $request, $id)
+    {
+        $blog = Blog::find($id);
+        $validated = Validator::make($request->all(), [
+            'TITLE' => 'required',
+            'CONTENT' => 'required',
+        ]);
+        
+
+        $slug = Str::slug($request->TITLE, '-');
+
+         // Check for uniqueness (optional)
+         $originalSlug = $slug;
+         $counter = 1;
+         while (Blog::where('SLUG', $slug)->exists()) {
+             $slug = $originalSlug . '-' . $counter++;
+         }
+ 
+         if ($validated->fails()) {
+             return redirect()->back()->withError($validated->errors());
+         }
+
+         if ($request->hasFile('IMAGE')) {
+            $uploadedFile = $request->file('IMAGE');
+            $imagePath = $uploadedFile->store('images/blog', 'public');// Save file in the `storage/app/public/images/art` directory
+            $blog->IMAGE_PATH = $imagePath;
+        }
+
+         $blog->TITLE = $request->TITLE;
+         $blog->SLUG = $slug;
+         $blog->CONTENT = $request->CONTENT;
+         
+         $blog->save();
+
+         return redirect()->route('admin.blog.show')->with('status','Blog "'. $blog->TITLE .'" has been Updated');
     }
 
     public function storeBlog(Request $request)

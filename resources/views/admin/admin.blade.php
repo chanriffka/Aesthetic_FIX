@@ -77,6 +77,14 @@
                     </a>
                 </li>
                 <li>
+                    <a href="{{ route('admin.artRequest.show') }}" class="flex items-center p-3 rounded-lg text-gray-700 hover:bg-indigo-100 hover:text-indigo-700">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6 mr-3 text-indigo-600">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M9.53 16.122a3 3 0 0 0-5.78 1.128 2.25 2.25 0 0 1-2.4 2.245 4.5 4.5 0 0 0 8.4-2.245c0-.399-.078-.78-.22-1.128Zm0 0a15.998 15.998 0 0 0 3.388-1.62m-5.043-.025a15.994 15.994 0 0 1 1.622-3.395m3.42 3.42a15.995 15.995 0 0 0 4.764-4.648l3.876-5.814a1.151 1.151 0 0 0-1.597-1.597L14.146 6.32a15.996 15.996 0 0 0-4.649 4.763m3.42 3.42a6.776 6.776 0 0 0-3.42-3.42" />
+                    </svg>
+                        Upload Art Request
+                    </a>
+                </li>
+                <li>
                     <a href="{{ route('admin.blog.show') }}" class="flex items-center p-3 rounded-lg text-gray-700 hover:bg-indigo-100 hover:text-indigo-700">
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6 mr-3 text-indigo-600">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M12 6.042A8.967 8.967 0 0 0 6 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 0 1 6 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 0 1 6-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0 0 18 18a8.967 8.967 0 0 0-6 2.292m0-14.25v14.25" />
@@ -110,7 +118,7 @@
         <header class="bg-white shadow-md p-4 flex justify-between items-center">
             <!-- Search -->
             <div class="relative">
-                <input type="text" placeholder="Search..." class="w-64 px-4 py-2 border rounded-lg focus:ring-indigo-300 focus:border-indigo-400">
+                {{-- <input type="text" placeholder="Search..." class="w-64 px-4 py-2 border rounded-lg focus:ring-indigo-300 focus:border-indigo-400"> --}}
             </div>
             <!-- Profile -->
             <div class="relative">

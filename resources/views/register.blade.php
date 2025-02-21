@@ -92,7 +92,7 @@
         </div>
         <!-- Terms Checkbox -->
         <div class="flex items-center mb-6">
-          <input class="mr-2" type="checkbox"/>
+          <input class="mr-2" type="checkbox" required/>
           <label class="text-gray-600">
             By signing up, you agree to the
             <a class="text-indigo-600" href="#">Terms of Use</a> and

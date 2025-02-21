@@ -27,11 +27,18 @@ class CartController extends Controller
             }
         }
 
-        $user->Carts()->create([
-            'ART_ID' => $art->ART_ID
-        ]);
+        if(Cart::where('ART_ID','=',$id)->count() > 0)
+        {
+            return redirect()->back()->with('status','Artwork already in cart');
+        }
+        else{
+            $user->Carts()->create([
+                'ART_ID' => $art->ART_ID
+            ]);
 
-        return redirect()->back()->with('status','Artwork has been added to cart');
+            return redirect()->back()->with('status','Artwork has been added to cart');
+        }
+
     }
 
     public function removeFromCart($id)

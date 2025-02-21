@@ -107,7 +107,7 @@ class OrderController extends Controller
                 $order->OrderItems()->create([
                     'ART_ID' => $cart->ART_ID,
                     'QUANTITY' => $cart->QUANTITY,
-                    'PRICE_PER_ITEM' => $cart->Art->PRICE,
+                    'PRICE_PER_ITEM' => (float) $cart->Art->PRICE,
                 ]);
 
                 $cart->delete();

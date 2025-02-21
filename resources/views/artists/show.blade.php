@@ -154,9 +154,14 @@
     <div class="bg-white">
         <!-- Profile Banner Section -->
         <div class="relative">
-            <img src="" alt="" class="w-full h-48 object-cover">
-            <div class="absolute top-0 left-0 w-full h-full bg-lime-500 opacity-50"></div>
-        </div>
+            <img 
+              src="{{ URL::asset('images/homepage3.jpeg') }}" 
+              alt="" 
+              class="w-full h-48 object-cover"
+            >
+            <!-- Gradient overlay with shadow effect -->
+            <div class="absolute top-0 left-0 w-full h-full bg-gradient-to-b from-black/30 to-black/50"></div>
+          </div>
 
         <!-- Sidebar: Profile Information -->
         {{-- @include('artists.artist-profile-sidebar') --}}
@@ -166,6 +171,32 @@
                 <div class="w-1/4 relative">
                     <div class="bg-white p-4 rounded-lg shadow-lg relative">
                         <!-- Ellipsis Button -->
+                        @if(Auth::check())
+                            @if (Auth::user()->USER_ID != $artist->USER_ID )
+                        <button class="ellipsisButton absolute top-2 right-2 text-gray-600 hover:text-gray-800 focus:outline-none">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 6.75a.75.75 0 1 1 0-1.5.75.75 0 0 1 0 1.5ZM12 12.75a.75.75 0 1 1 0-1.5.75.75 0 0 1 0 1.5ZM12 18.75a.75.75 0 1 1 0-1.5.75.75 0 0 1 0 1.5Z" />
+                            </svg>
+                        </button>
+                        <!-- Options Menu -->
+                        <div class="optionsMenu hidden bg-white rounded-lg shadow-lg py-2 w-48">
+                            <!-- Edit Profile Button -->
+                            <!-- Review Artist Button -->
+                            @if($artist->ArtistRatings->where('USER_ID',Auth::user()->USER_ID)->count() == 0)
+                            <button onclick="openReviewModal()" class="block w-full text-left px-4 py-3 hover:bg-green-100 hover:text-green-600 transition-colors duration-200 font-medium text-gray-700 flex items-center">
+                                <i class="fas fa-star mr-3 text-green-500"></i>
+                                Review Artist
+                            </button>
+                            @endif
+
+                            <!-- Report Artist Button (styled in red) -->
+                            <button onclick="openReportModal()" class="block w-full text-left px-4 py-3 hover:bg-red-100 hover:bg-red-100 text-red-600 hover:text-red-700 transition-colors duration-200 font-medium flex items-center">
+                                <i class="fa fa-flag mr-3 text-red-600"></i>
+                                Report
+                            </button>
+                        </div>
+                            @endif
+                        @endif
 
                         <div class="text-center">
                             <img src="{{ $artist->MasterUser->Buyer->PROFILE_IMAGE_URL != null ? asset($artist->MasterUser->Buyer->PROFILE_IMAGE_URL) : "https://placehold.co/100x100"}}" alt="Profile picture"
@@ -176,17 +207,18 @@
                             <p class="text-gray-600"><i class="fas fa-map-marker-alt"></i> {{ $artist->LOCATION }}</p>
                             @if($artistItSelf == false)
                                 @if(Auth::user() != null)
-                                @if($artist->ArtistRatings->where('USER_ID',Auth::user()->USER_ID)->count() == 0)
+                                {{-- @if($artist->ArtistRatings->where('USER_ID',Auth::user()->USER_ID)->count() == 0)
                                 <button onclick="openReviewModal()" class="bg-yellow-500 text-white px-4 py-2 rounded-full w-full mt-4">
                                     <i class="fas fa-star mr-3 text-white"></i>
                                     <span id="followText">Review Artist</span>
                                 </button>
-                                @endif
-
-                                <button onclick="openReportModal()" class="bg-red-500 text-white px-4 py-2 rounded-full w-full mt-4">
-                                    <i class="fa fa-flag mr-3 text-white"></i>
-                                    <span id="followText">Report</span>
+                                @endif --}}
+                                <a href="https://wa.me/{{ preg_replace('/^0/', '62', Auth::User()->Buyer->PHONE_NUMBER) }}">  
+                                <button class="bg-blue-500 text-white px-4 py-2 rounded-full w-full mt-4">
+                                    <i class="fas fa-comments mr-3 text-white"></i>
+                                    <span id="followText">Contact Artist</span>
                                 </button>
+                                </a>
                                 @if(Auth::user()->isFollowing($artist->USER_ID))
                                 <button onclick="window.location.href='{{ route('unfollow', ['userId' => $artist->USER_ID]) }}'" class="bg-gray-500 text-white px-4 py-2 rounded-full w-full mt-4">
                                     <i id="followIcon" class="fas fa-user-check mr-2"></i>
@@ -273,44 +305,53 @@
                     </div>
 
                     <!-- Posts Section -->
+                    @if($section != 'posts')
+                    @if($latestPosts)
                     <div class="bg-white p-4 rounded-lg shadow-lg mt-4">
                         <h3 class="text-lg font-bold">Posts</h3>
-                        <div class="mt-4">
-                            <div class="flex items-start">
-                                <img src="https://placehold.co/50x50"
-                                    alt="Post profile picture" class="w-12 h-12 rounded-full object-cover">
-                                <div class="ml-4">
-                                    <h4 class="font-bold">username</h4>
-                                    <p class="text-gray-600">content</p>
-                                    <img src="https://placehold.co/200x100"
-                                        alt="Post image" class="mt-2 rounded-lg object-cover w-full h-32">
-                                    <div class="flex justify-between items-center mt-2">
-                                        <div class="flex space-x-10">
-                                            <!-- like button -->
-                                            <button class="text-gray-600 flex flex-col items-center">
-                                                <img src="/images/heart.svg" alt="Shopping Cart"
-                                                    class="w-5 h-5">
-                                                <span class="text-xs mt-1">Like</span>
-                                            </button>
-                                            <!-- comment button -->
-                                            <button class="text-gray-600 flex flex-col items-center">
-                                                <img src="/images/comment.svg" alt="Shopping Cart"
-                                                    class="w-5 h-5">
-                                                <span class="text-xs mt-1">Comment</span>
-                                            </button>
-                                            <!-- share button -->
-                                            <button class="text-gray-600 flex flex-col items-center">
-                                                <img src="/images/share.svg" alt="Shopping Cart"
-                                                    class="w-5 h-5">
-                                                <span class="text-xs mt-1">Share</span>
-                                            </button>
+                        <a href="{{ route('post.detail',['id'=>$latestPosts->POST_ID]) }}">
+                            <div class="mt-4">
+                                <div class="flex items-start">
+                                    <img src={{ $latestPosts->Artist->MasterUser->Buyer->PROFILE_IMAGE_URL != null? asset($latestPosts->Artist->MasterUser->Buyer->PROFILE_IMAGE_URL) : "https://placehold.co/50x50" }}
+                                        alt="Post profile picture" class="w-12 h-12 rounded-full object-cover">
+                                    <div class="ml-4">
+                                        <h4 class="font-bold">{{ $latestPosts->Artist->MasterUser->USERNAME }}</h4>
+                                        <p class="text-gray-600">{{ $latestPosts->CONTENT }}</p>
+                                        @if($latestPosts && $latestPosts->PostMedias->isNotEmpty())
+                                        <img src="{{ Str::startsWith($latestPosts->PostMedias()->First()->POST_MEDIA_PATH, 'images/post/') ? asset($latestPosts->PostMedias()->First()->POST_MEDIA_PATH) : $latestPosts->PostMedias()->First()->POST_MEDIA_PATH }}"
+                                            alt="Post image" class="mt-2 rounded-lg object-cover w-full h-32">
+                                        @endif
+                                        <div class="flex justify-between items-center mt-2">
+                                            <div class="flex space-x-10">
+                                                <!-- like button -->
+                                                <button class="text-gray-600 flex flex-col items-center">
+                                                    <img src="{{ asset('/images/heart.svg') }}" alt="Shopping Cart"
+                                                        class="w-5 h-5">
+                                                    <span class="text-xs mt-1">Like</span>
+                                                </button>
+                                                <!-- comment button -->
+                                                <button class="text-gray-600 flex flex-col items-center">
+                                                    <img src="{{ asset('/images/comment.svg') }}" alt="Shopping Cart"
+                                                        class="w-5 h-5">
+                                                    <span class="text-xs mt-1">Comment</span>
+                                                </button>
+                                                <!-- share button -->
+                                                <button class="text-gray-600 flex flex-col items-center">
+                                                    <img src="{{ asset('/images/share.svg') }}" alt="Shopping Cart"
+                                                        class="w-5 h-5">
+                                                    <span class="text-xs mt-1">Share</span>
+                                                </button>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
                             </div>
-                        </div>
+                        </a>
                     </div>
+                    @endif
+                    @endif
                 </div>
+                
 
                 <!-- Main Content Area -->
                 <div class="w-3/4 ml-4">
@@ -490,7 +531,7 @@
                                     placeholder="8123456789" 
                                     oninput="this.value = this.value.replace(/[^0-9]/g, '').slice(0, 13)" 
                                     required 
-                                    value="{{ $artist->MasterUser->Buyer->PHONE_NUMBER ?? '' }}"
+                                    value="{{ Str::after($artist->MasterUser->Buyer->PHONE_NUMBER ?? '', '+62') }}"
                                 />
                             </div>
                         </div>
@@ -504,16 +545,18 @@
                             </div>
 
                             <div>
-                                <label for="location" class="block text-gray-700 font-medium">📍 Location
-                                    Level</label>
-                                <select id="location" name="location"
-                                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-600"
-                                    required>
+                                <label for="location" class="block text-gray-700 font-medium">📍 Location Level</label>
+                                <select id="location" name="location_display"
+                                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-600 bg-gray-100 text-gray-400 cursor-not-allowed disabled:opacity-50"
+                                    disabled>
                                     <option value="USA" @if($artist->LOCATION == "USA") selected @endif>USA</option>
                                     <option value="Indonesia" @if($artist->LOCATION == "Indonesia") selected @endif>Indonesia</option>
                                     <option value="Russia" @if($artist->LOCATION == "Russia") selected @endif>Russia</option>
                                     <option value="Singapore" @if($artist->LOCATION == "Singapore") selected @endif>Singapore</option>
                                 </select>
+                            
+                                <!-- Hidden Input to Ensure Data is Submitted -->
+                                <input type="hidden" name="location" value="{{ $artist->LOCATION }}">
                             </div>
 
                             <!-- Social Media Links -->
@@ -579,41 +622,41 @@
                 </div>
                 <div class="p-6 space-y-4">
                     <form action="{{ route('artist.review',['id'=>$artist->ARTIST_ID]) }}" method="post">
-                    @method('PUT')
-                    @csrf
-                    <!-- Star Rating -->
-                    <div>
-                        <label class="block text-gray-700 font-medium mb-1">Rating</label>
-                        <div class="flex space-x-2">
-                            <!-- Stars with dynamic highlighting based on selection -->
-                            <span class="star cursor-pointer text-gray-300 text-2xl" data-rating="1"
-                                onclick="setRating(1)">&#9733;</span>
-                            <span class="star cursor-pointer text-gray-300 text-2xl" data-rating="2"
-                                onclick="setRating(2)">&#9733;</span>
-                            <span class="star cursor-pointer text-gray-300 text-2xl" data-rating="3"
-                                onclick="setRating(3)">&#9733;</span>
-                            <span class="star cursor-pointer text-gray-300 text-2xl" data-rating="4"
-                                onclick="setRating(4)">&#9733;</span>
-                            <span class="star cursor-pointer text-gray-300 text-2xl" data-rating="5"
-                                onclick="setRating(5)">&#9733;</span>
+                        @method('PUT')
+                        @csrf
+                        <!-- Star Rating -->
+                        <div>
+                            <label class="block text-gray-700 font-medium mb-1">Rating</label>
+                            <div class="flex space-x-2">
+                                <!-- Stars with dynamic highlighting based on selection -->
+                                <span class="star cursor-pointer text-gray-300 text-2xl" data-rating="1"
+                                    onclick="setRating(1)">&#9733;</span>
+                                <span class="star cursor-pointer text-gray-300 text-2xl" data-rating="2"
+                                    onclick="setRating(2)">&#9733;</span>
+                                <span class="star cursor-pointer text-gray-300 text-2xl" data-rating="3"
+                                    onclick="setRating(3)">&#9733;</span>
+                                <span class="star cursor-pointer text-gray-300 text-2xl" data-rating="4"
+                                    onclick="setRating(4)">&#9733;</span>
+                                <span class="star cursor-pointer text-gray-300 text-2xl" data-rating="5"
+                                    onclick="setRating(5)">&#9733;</span>
+                            </div>
                         </div>
-                    </div>
-
-                    {{-- rating input --}}
-                    <input type="hidden" id="ratingInput" name="rating">
-
-                    <!-- Review Text -->
-                    <div>
-                        <label for="content" class="block text-gray-700 font-medium mb-1">Review</label>
-                        <textarea id="content" name="content" rows="3"
-                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                            placeholder="Write your review..."></textarea>
-                    </div>
-
-                    <div class="flex justify-end">
-                        <button type="submit"
-                            class="bg-indigo-600 text-white px-6 py-2 rounded-full hover:bg-indigo-700 transition duration-200">Submit</button>
-                    </div>
+        
+                        {{-- rating input --}}
+                        <input type="hidden" id="ratingInput" name="rating">
+        
+                        <!-- Review Text -->
+                        <div>
+                            <label for="content" class="block text-gray-700 font-medium mb-1">Review</label>
+                            <textarea id="content" name="content" rows="3"
+                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                placeholder="Write your review..."></textarea>
+                        </div>
+        
+                        <div class="flex justify-end">
+                            <button type="submit"
+                                class="bg-indigo-600 text-white px-6 py-2 rounded-full hover:bg-indigo-700 transition duration-200">Submit</button>
+                        </div>
                     </form>
                 </div>
             </div>
@@ -643,18 +686,13 @@
         <div id="reportModal" class="modal flex hidden">
             <div class="bg-white w-full max-w-lg rounded-lg shadow-lg overflow-hidden">
                 <div class="flex justify-between items-center p-4 border-b bg-gray-50">
-                    <h2 class="text-xl font-semibold text-gray-800">Report or Block</h2>
+                    <h2 class="text-xl font-semibold text-gray-800">Report Artist</h2>
                     <button onclick="closeReportModal()" class="text-gray-500 hover:text-gray-700">
                         <i class="fas fa-times"></i>
                     </button>
                 </div>
                 <div class="p-6 space-y-4">
                     <p class="text-gray-800 font-medium">Select an action</p>
-                    <div class="flex justify-between items-center border-b border-gray-200 py-3 cursor-pointer hover:bg-gray-100"
-                        onclick="openBlockConfirmation()">
-                        <span>Block Something4U</span>
-                        <i class="fas fa-chevron-right text-gray-400"></i>
-                    </div>
                     <div class="flex justify-between items-center border-b border-gray-200 py-3 cursor-pointer hover:bg-gray-100"
                         onclick="openReportProfileModal()">
                         <span>Report Something4U or entire account</span>
@@ -1049,6 +1087,26 @@
 
 
 <script>
+    document.addEventListener('DOMContentLoaded', function () {
+        // Check for validation errors
+        const errors = {!! json_encode($errors->all()) !!};
+
+        if (errors.length > 0) {
+            let errorMessage = 'Please fill the required field:\n';
+            errors.forEach((error, index) => {
+                errorMessage += `${index + 1}. ${error}\n`;
+            });
+            alert(errorMessage);
+        }
+
+        // Check for success message
+        const successMessage = '{{ session('success') }}';
+        if (successMessage) {
+            alert(successMessage);
+        }
+    });
+
+
     document.getElementById('profilePictureUpload').addEventListener('change', function (event) {
         const file = event.target.files[0]; // Get the selected file
         const labelElement = document.querySelector('label[for="profilePictureUpload"]'); // Select the label
